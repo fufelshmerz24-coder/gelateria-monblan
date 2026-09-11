@@ -18,6 +18,9 @@
 /gelateria monblan v1 23.07.26.html
 /gelateria monblan v2 24.07.26.html
 
+# исходники превью бокового меню — уже скопированы в assets/img/nav/ под нужными именами
+/assets/img/боковое меню/
+
 # системные
 .DS_Store
 Thumbs.db
