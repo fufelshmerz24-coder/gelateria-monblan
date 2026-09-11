@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gelateria MonBlan — джелато и щербет по итальянской технологии</title>
+<style>
+  @font-face{
+    font-family:'Cranio';
+    src:url('assets/fonts/Cranio-Regular.otf') format('opentype');
+    font-weight:400;font-style:normal;font-display:swap;
+  }
+  @font-face{
+    font-family:'Cranio';
+    src:url('assets/fonts/Cranio-Oblique.otf') format('opentype');
+    font-weight:400;font-style:italic;font-display:swap;
+  }
+  @font-face{
+    font-family:'Graphik';
+    src:url('assets/fonts/Graphik-Regular.ttf') format('truetype');
+    font-weight:400;font-style:normal;font-display:swap;
+  }
+  @font-face{
+    font-family:'Graphik';
+    src:url('assets/fonts/Graphik-Medium.ttf') format('truetype');
+    font-weight:500;font-style:normal;font-display:swap;
+  }
+  @font-face{
+    font-family:'Graphik';
+    src:url('assets/fonts/Graphik-Semibold.ttf') format('truetype');
+    font-weight:600;font-style:normal;font-display:swap;
+  }
+  @font-face{
+    font-family:'Graphik';
+    src:url('assets/fonts/Graphik-Bold.ttf') format('truetype');
+    font-weight:700;font-style:normal;font-display:swap;
+  }
+  @font-face{
+    font-family:'Sansation';
+    src:url('assets/fonts/Sansation-Regular.ttf') format('truetype');
+    font-weight:400;font-style:normal;font-display:swap;
+  }
+  @font-face{
+    font-family:'Sansation';
+    src:url('assets/fonts/Sansation-Bold.ttf') format('truetype');
+    font-weight:700;font-style:normal;font-display:swap;
+  }
+  :root{
+    --cream:#F6F1E3;
+    --cream-deep:#EEE6D2;
+    --paper:#FBF8F0;
+    --maroon:#4B0F1D;
+    --maroon-deep:#330913;
+    /* единый цвет всего текста и заголовков на светлом фоне */
+    --heading-red:#470B0B;
+    --maroon-velvet:#5c1220;
+    --ink:#470B0B;
+    --ink-soft:#470B0B;
+    --gold:#B98D4C;
+    --gold-light:#d9bd8c;
+    --line: rgba(43,24,16,.12);
+    --shadow: 0 20px 60px rgba(43,24,16,.14);
+    --ease: cubic-bezier(.22,1,.36,1);
+    /* единый отступ от заголовка секции до её контента — одинаковый во всех блоках;
+       масштабируется с шириной экрана, чтобы на широкоформатных мониторах
+       заголовок не «прилипал» к контенту */
+    --head-gap: clamp(44px, 4.5vw, 104px);
+    /* ---- единая типографика ----
+       описания (Graphik) — один кегль по всему сайту;
+       названия мороженого (Cranio) — один кегль;
+       заголовки 2-го уровня — .section-head h2 (Sansation), тоже один кегль */
+    --text-size: 18px;
+    --flavor-name-size: 24px;
+    /* кегль подписи «Кофейня для ценителей…» в hero — им же набран текст в блоке «Место встречи» */
+    --tag-size: clamp(14px, 1.6vw, 17px);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Graphik',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,video{max-width:100%;display:block;}
+  a{color:inherit;text-decoration:none;}
+  h1,h2,h3{font-family:'Cranio',serif;font-weight:500;margin:0;letter-spacing:.01em;}
+  .eyebrow{
+    font-family:'Graphik',sans-serif;
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  /* единая контентная колонка для всего сайта.
+     Боковые поля растут плавно: ~30px на телефоне/планшете, ~100px на 1920,
+     ~225px на 4K (3840). Формула 6.5vw - 25px с ограничителями 30…250px. */
+  .wrap{max-width:3400px;margin:0 auto;padding:0 clamp(30px,calc(6.5vw - 25px),250px);}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+  .reveal-scale{opacity:0;transform:scale(.94);transition:opacity 1s var(--ease), transform 1s var(--ease);}
+  .reveal-scale.in{opacity:1;transform:scale(1);}
+  .stagger.in > *{transition-delay:calc(var(--i) * 90ms);}
+
+  /* ===== PRELOADER ===== */
+  html.is-loading, html.is-loading body{overflow:hidden;height:100%;}
+  .preloader{
+    position:fixed;inset:0;z-index:5000;
+    background:#1c0509;
+    overflow:hidden;
+    transition:opacity 1s ease;
+  }
+  .preloader.done{opacity:0;pointer-events:none;}
+
+  /* preloader video — plays once, then fades smoothly to reveal the hero (main.png) underneath */
+  .preloader-video{
+    position:absolute;inset:0;z-index:1;
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
+
+  .preloader-brand{
+    position:absolute;top:48px;left:50%;transform:translateX(-50%);
+    text-align:center;z-index:5;opacity:0;transition:opacity .8s ease .25s;
+  }
+  .preloader.play .preloader-brand{opacity:1;}
+  .preloader-brand b{
+    font-family:'Cranio',serif;font-style:italic;font-weight:500;
+    font-size:clamp(20px,2.6vw,28px);color:var(--cream);display:block;
+  }
+  .preloader-brand span{
+    display:block;margin-top:8px;font-family:'Graphik',sans-serif;font-size:10px;
+    letter-spacing:.34em;text-transform:uppercase;color:var(--gold-light);
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:1000;
+    padding:22px 0;
+    transition:background .4s ease, padding .4s ease, box-shadow .4s ease;
+  }
+  header.solid{background:rgba(246,241,227,.92);backdrop-filter:blur(10px);padding:14px 0;box-shadow:0 4px 30px rgba(43,24,16,.08);}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;}
+  /* пока хедер прозрачный (поверх обложки) — меню опущено до уровня верхнего края
+     логотипа обложки (.hero-top{top:64px}) и выровнено с ним по верхнему краю */
+  header:not(.solid){padding-top:64px;}
+  header:not(.solid) .wrap{align-items:flex-start;}
+  .logo{
+    font-family:'Cranio',serif;font-style:italic;font-weight:500;
+    font-size:24px;line-height:1;color:var(--ink);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .logo span{
+    font-family:'Graphik',sans-serif;font-style:normal;font-size:9px;
+    letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  header:not(.solid) .logo{opacity:0;pointer-events:none;}
+  header.on-dark .logo, header.on-dark .menu-toggle{color:var(--cream);}
+  header.on-dark .logo span{color:var(--gold-light);}
+  header.solid.on-dark{color:var(--ink);}
+  header.solid .logo, header.solid .menu-toggle{color:var(--ink) !important;}
+  header.solid .logo span{color:var(--ink-soft) !important;}
+
+  .menu-toggle{
+    display:flex;align-items:center;gap:10px;
+    background:none;border:none;cursor:pointer;
+    font-family:'Graphik',sans-serif;font-size:clamp(11px,1.1vw,13px);letter-spacing:.22em;
+    text-transform:uppercase;font-weight:600;color:var(--ink);
+    padding:8px;
+  }
+  .menu-toggle .menu-label{transition:opacity .3s ease;}
+  .menu-toggle.open .menu-label{opacity:0;width:0;overflow:hidden;}
+  .menu-toggle .bars{display:flex;flex-direction:column;gap:4px;width:22px;}
+  .menu-toggle .bars span{height:1.5px;background:currentColor;transition:all .4s var(--ease);}
+  .menu-toggle.open .bars span:nth-child(1){transform:translateY(5.5px) rotate(45deg);}
+  .menu-toggle.open .bars span:nth-child(2){opacity:0;}
+  .menu-toggle.open .bars span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg);}
+
+  /* ---- боковое меню (nav-overlay) — Figma node 28:1198 «боковое меню» ---- */
+  .nav-overlay{
+    position:fixed;inset:0;background:#470B0B;z-index:999;
+    clip-path:circle(0% at calc(100% - 60px) 40px);
+    transition:clip-path .7s var(--ease);
+    /* рамка меню тянется по той же контентной колонке, что и .wrap:
+       левый край = боковой отступ сайта, ширина = вся колонка (потолок 2200px).
+       Лента превью и её позиция считаются из этих же значений. */
+    --nb-pad:clamp(30px,calc(6.5vw - 25px),250px);
+    --nb-width:min(calc(100vw - var(--nb-pad) * 2),2200px);
+    --nb-prev-w:min(calc(var(--nb-width) * 0.46),780px);
+  }
+  .nav-overlay.open{clip-path:circle(150% at calc(100% - 60px) 40px);}
+
+  .nav-address{
+    position:absolute;z-index:3;top:clamp(28px,6.1vh,50px);left:clamp(22px,3.5vw,50px);
+    font-family:'Graphik',sans-serif;font-size:clamp(13px,1.25vw,18px);
+    letter-spacing:.04em;text-transform:uppercase;
+    color:var(--cream);
+  }
+
+  /* рамка меню — по макету: слева, чуть выше центра (не центрируется);
+     рамка рисуется ПОВЕРХ ленты превью (z-index выше) */
+  .nav-box{
+    position:absolute;z-index:2;
+    left:var(--nb-pad);
+    top:clamp(72px,15vh,220px);
+    width:var(--nb-width);
+    height:clamp(420px,68vh,1000px);
+    display:flex;align-items:stretch;
+    border:2px solid var(--cream);
+    pointer-events:none;
+  }
+  .nav-box .nav-list{pointer-events:auto;}
+  .nav-tags{position:relative;flex:0 0 auto;width:clamp(34px,3vw,46px);border-right:1.5px solid var(--cream);}
+  .nav-tag{
+    position:absolute;left:50%;white-space:nowrap;
+    font-family:'Graphik',sans-serif;font-size:clamp(11px,1vw,14px);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--cream);
+    transform-origin:center;
+  }
+  .nav-tag-top{top:27%;transform:translate(-50%,-50%) rotate(-90deg);}
+  .nav-tag-bottom{top:100%;transform:translate(-50%,-50%) rotate(-90deg);}
+
+  .nav-list{
+    flex:0 0 auto;display:flex;flex-direction:column;
+    align-items:flex-start;justify-content:center;
+    gap:clamp(20px,3.6vh,38px);
+    padding-left:clamp(28px,4.4vw,64px);padding-right:40px;
+  }
+  .nav-overlay a{
+    font-family:'Sansation',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.02em;
+    font-size:clamp(15px,1.25vw,20px);color:#FFFDE2;
+    opacity:.82;transition:opacity .35s ease;
+  }
+  .nav-overlay a:hover{opacity:1;}
+  .nav-overlay a.active{opacity:1;font-weight:700;}
+
+  /* ---- лента превью секций: видны все блоки, активный ярче ---- */
+  .nav-content-viewport{
+    position:absolute;z-index:1;top:0;height:100%;
+    /* лента сдвинута ближе к центру рамки: центрируем её в колонке меню
+       с лёгким смещением вправо; ширина — из --nb-prev-w */
+    width:var(--nb-prev-w);
+    left:calc(var(--nb-pad) + (var(--nb-width) - var(--nb-prev-w)) / 2 + clamp(24px,3.5vw,110px));
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .nav-content-track{position:relative;will-change:transform;}
+  .nav-content-block{
+    position:relative;width:100%;aspect-ratio:1100 / 782;
+    margin-bottom:clamp(16px,2.6vh,36px);
+    overflow:hidden;border-radius:2px;
+    opacity:.55;transition:opacity .55s ease;
+    box-shadow:0 14px 44px rgba(0,0,0,.34);
+  }
+  .nav-content-block.active{opacity:1;}
+  .nav-content-block img{width:100%;height:100%;object-fit:cover;display:block;}
+  .nav-debug-hud{
+    position:absolute;top:8px;left:8px;z-index:10;background:rgba(0,0,0,.7);color:#9f9;
+    font-family:monospace;font-size:11px;line-height:1.5;padding:6px 9px;border-radius:5px;
+    pointer-events:none;white-space:pre;
+  }
+  .nav-debug-line{position:absolute;left:0;right:0;height:2px;background:#2f2;z-index:10;pointer-events:none;}
+
+  /* ===== HERO ===== */
+  .hero{
+    position:relative;height:100svh;min-height:640px;
+    overflow:hidden;background:var(--maroon-deep);
+  }
+  .hero video, .hero .poster{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(20,4,8,.15) 0%, rgba(20,4,8,.05) 40%, rgba(20,4,8,.75) 100%);
+  }
+  .hero .poster{animation:heroKenBurns 24s ease-in-out infinite alternate;}
+  @keyframes heroKenBurns{from{transform:scale(1)}to{transform:scale(1.08)}}
+  .hero.light-bg::after{
+    background:linear-gradient(180deg, rgba(43,24,16,0) 0%, rgba(43,24,16,0) 55%, rgba(43,24,16,.12) 78%, rgba(43,24,16,.4) 100%);
+  }
+  .hero.light-bg .hero-logo{color:var(--heading-red);}
+  .hero.light-bg .hero-center .tag{color:var(--heading-red);}
+  .hero-inner{
+    position:relative;z-index:2;width:100%;height:100%;
+  }
+  .hero-top{position:absolute;top:64px;left:0;right:0;}
+  .hero-logo{font-family:'Cranio',serif;line-height:1;color:var(--cream);text-align:left;}
+  .hero-logo .hl-big{display:block;font-style:italic;font-weight:500;font-size:clamp(30px,5vw,56px);}
+  .hero-logo .hl-small{display:block;font-style:normal;font-weight:400;margin-top:6px;font-size:clamp(15px,2.3vw,26px);}
+  /* подпись «Кофейня для ценителей…» и кнопка каталога — по центру обложки
+     по горизонтали, кнопка под надписью; по вертикали — у верхнего края
+     контентной колонки, на том же уровне, что и логотип (.hero-top{top:64px}) */
+  .hero-center{
+    position:absolute;left:0;right:0;top:64px;
+    display:flex;flex-direction:column;align-items:center;
+    text-align:center;gap:clamp(24px,3vw,40px);
+  }
+  .hero-center .tag{
+    font-family:'Graphik',sans-serif;font-style:normal;text-transform:uppercase;color:var(--gold-light);
+    font-size:var(--tag-size);line-height:1.5;letter-spacing:.02em;
+  }
+
+  /* ===== FLAVORS OF MONTH ===== */
+  /* вертикальные поля секции масштабируются с шириной экрана: на широких
+     мониторах разрыв между блоками должен быть заметно больше, чем отступ
+     заголовка от его же контента (--head-gap) — иначе ритм «ломается» */
+  .section{padding:clamp(40px,4.5vw,110px) 0;}
+  .section-head{position:relative;z-index:5;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:var(--head-gap);flex-wrap:wrap;}
+  .section-head h2{
+    font-family:'Sansation',sans-serif;font-weight:400;font-style:normal;
+    font-size:clamp(28px,3.8vw,42px);text-transform:uppercase;letter-spacing:.01em;
+    color:var(--heading-red);
+  }
+
+  /* ---- interactive ice gallery ---- */
+  .ice-gallery{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:64px 40px;
+    /* дополнительный воздух между заголовком и креманками (у PNG большой
+       прозрачный запас сверху, из-за него зазор визуально «съедался»);
+       тоже тянется на широких экранах */
+    margin-top:clamp(24px,3.4vw,80px);
+  }
+  .ice-gallery .ice-card:nth-child(2),
+  .ice-gallery .ice-card:nth-child(5){margin-top:64px;}
+  .ice-card{display:flex;flex-direction:column;}
+  /* креманка уменьшена (ширина 72% — на ~28% меньше исходной) и центрирована в колонке;
+     льдинки и хит-зона позиционируются в % от .ice-card-media, поэтому
+     масштабируются вместе с ней */
+  .ice-card-media{position:relative;aspect-ratio:1024/1360;width:72%;margin-inline:auto;}
+  .ice-gelato-img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;
+    display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;
+  }
+  .ice-layer{position:absolute;inset:0;z-index:2;touch-action:none;}
+  .ice-cube{
+    position:absolute;left:0;top:0;width:23%;aspect-ratio:1/1;margin-left:-11.5%;margin-top:-11.5%;
+    pointer-events:none;will-change:transform;
+    filter:drop-shadow(0 3px 8px rgba(43,24,16,.16));
+  }
+  .ice-cube img{width:100%;height:100%;object-fit:contain;display:block;}
+  .ice-card-name{
+    display:block;margin:28px 0 0;
+    font-family:'Cranio',serif;font-size:var(--flavor-name-size);font-weight:500;
+    text-transform:lowercase;color:var(--heading-red);
+  }
+  .ice-card-desc{margin:10px 0 0;font-family:'Graphik',sans-serif;font-size:var(--text-size);color:var(--ink);line-height:1.6;}
+
+  .ice-debug{position:absolute;inset:0;z-index:6;pointer-events:none;}
+  .ice-debug .a-dot{
+    position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;
+    background:rgba(0,180,255,.35);border:1px solid rgba(0,120,220,.9);
+    display:flex;align-items:center;justify-content:center;
+    font-size:7px;line-height:1;color:#00314f;font-family:monospace;
+  }
+  .ice-debug .a-area{
+    position:absolute;border:1.5px dashed rgba(255,0,130,.85);border-radius:50%;
+    background:rgba(255,0,130,.04);
+  }
+  .ice-debug .a-radius{
+    position:absolute;border:1px solid rgba(40,190,60,.9);border-radius:50%;
+  }
+  .ice-debug .a-pointer{
+    position:absolute;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;
+    background:rgba(40,190,60,1);
+  }
+  @media(max-width:900px){
+    .ice-gallery{grid-template-columns:repeat(2,1fr);gap:44px 24px;}
+    .ice-gallery .ice-card:nth-child(2),
+    .ice-gallery .ice-card:nth-child(5){margin-top:0;}
+  }
+
+  /* ---- orbit ice (scroll-driven rotating ice around a single cup) ---- */
+  .orbit-section{padding:60px 0;}
+  .orbit-stage{position:relative;width:100%;aspect-ratio:4320/2490;margin:0 auto;}
+  .orbit-stage .orbit-gelato-img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:5;
+    display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;
+  }
+  /* z-index:auto явно — иначе побеждает общее правило .ice-layer{z-index:2} выше
+     (более специфичный селектор не отменяет свойство, которое сам не задаёт),
+     из-за чего .ice-layer создавал свой stacking context и НИ ОДИН кубик не мог
+     оказаться выше orbit-gelato-img, какой бы z-index у него ни был */
+  .orbit-stage .ice-layer{position:absolute;inset:0;z-index:auto;touch-action:none;}
+  .orbit-stage .ice-cube{width:15%;margin-left:-7.5%;margin-top:-7.5%;}
+  .orbit-debug-readout{
+    position:absolute;top:8px;left:8px;z-index:7;background:rgba(0,0,0,.65);color:#9f9;
+    font-family:monospace;font-size:12px;line-height:1.5;padding:8px 10px;border-radius:6px;
+    pointer-events:none;white-space:pre;
+  }
+
+  /* ===== CLOSING VIDEO ===== */
+  .closing-video{position:relative;aspect-ratio:1446/763;min-height:420px;overflow:hidden;}
+  .closing-video video{width:100%;height:100%;object-fit:cover;display:block;}
+
+  #banner230{padding:0;}
+  .banner-img img{width:100%;display:block;}
+  .banner-cta{text-align:center;padding:56px 32px;}
+  .btn-frame{
+    position:relative;
+    display:inline-flex;align-items:center;justify-content:center;
+    width:240px;height:60px;
+    font-family:'Graphik',sans-serif;font-weight:400;letter-spacing:.06em;
+    font-size:15px;text-transform:uppercase;color:var(--heading-red);
+    transition:color .35s ease;
+  }
+  .btn-frame::before,.btn-frame::after{
+    content:"";position:absolute;width:58%;height:100%;
+    border:1px solid var(--heading-red);
+    transition:border-color .35s ease, width .35s ease, height .35s ease;
+  }
+  .btn-frame::before{top:0;left:0;border-right:none;border-bottom:none;}
+  .btn-frame::after{bottom:0;right:0;border-left:none;border-top:none;}
+  .btn-frame:hover{color:var(--maroon);}
+  .btn-frame:hover::before,.btn-frame:hover::after{border-color:var(--maroon);width:66%;}
+  .btn-frame.light{color:var(--cream);}
+  .btn-frame.light::before,.btn-frame.light::after{border-color:var(--gold-light);}
+  .btn-frame.light:hover{color:var(--cream);}
+  .btn-frame.light:hover::before,.btn-frame.light:hover::after{border-color:var(--cream);}
+
+  /* ===== ABOUT / «ЛОКАЦИЯ» — Figma node 39:1651 =====
+     Коллаж собран 1:1 по макету (фрейм 1446 × 3387).
+     Заголовок вынесен в обычный .section-head над коллажем, поэтому верхняя
+     полоса фрейма под заголовок срезана: высота фрейма 3387 → 3267, а все
+     top-координаты пересчитаны от нового верха (первое изображение = 0):
+     Остальные координаты/размеры — в % от фрейма, типографика — в cqw.        */
+  .about-collage{
+    position:relative;
+    width:100%;
+    max-width:none;                /* заполняет единую контентную колонку .wrap */
+    margin:0 auto;
+    aspect-ratio:1446 / 3267;
+    container-type:inline-size;
+  }
+  .about-collage > *{position:absolute;margin:0;}
+
+  .about-collage .ac-img{overflow:hidden;}
+  .about-collage .ac-img img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    transition:transform 1.2s var(--ease);
+  }
+  .about-collage .ac-img:hover img{transform:scale(1.05);}
+
+  .about-collage .ac-img-31{left:3.665%;top:0%;width:20.954%;aspect-ratio:303 / 388;}
+  .about-collage .ac-img-11{left:43.084%;top:2.632%;width:53.043%;aspect-ratio:767 / 472;}
+  .about-collage .ac-img-21{left:3.665%;top:17.080%;width:29.184%;aspect-ratio:422 / 539;}
+  .about-collage .ac-img-41{left:32.849%;top:38.108%;width:45.090%;aspect-ratio:652 / 569;}
+  .about-collage .ac-img-51{left:3.665%;top:55.522%;width:29.184%;aspect-ratio:422 / 653;}
+  .about-collage .ac-img-61{left:43.084%;top:75.519%;width:53.043%;aspect-ratio:767 / 750;}
+
+  .about-collage .ac-gelateria{
+    left:14.869%;top:11.141%;
+    font-family:'Cranio',serif;font-weight:400;
+    font-size:clamp(46px,7.294cqw,150px);
+    line-height:1;color:var(--heading-red);white-space:nowrap;
+    pointer-events:none;
+  }
+  .about-collage .ac-monblan{
+    left:15.076%;top:14.130%;
+    font-family:'Cranio',serif;font-weight:400;
+    font-size:clamp(22px,3.449cqw,70px);
+    line-height:1;color:var(--heading-red);white-space:nowrap;
+    pointer-events:none;
+  }
+
+  .about-collage .ac-text{color:var(--heading-red);}
+  .about-collage .ac-text p{
+    margin:0;
+    font-family:'Graphik',sans-serif;font-weight:400;
+    /* кегль как у подписи «Кофейня для ценителей…» в hero */
+    font-size:var(--tag-size);
+    line-height:1.6;text-transform:uppercase;
+  }
+  .about-collage .ac-text-a{left:43.084%;top:28.987%;width:53.320%;}
+  .about-collage .ac-text-b{left:3.665%;top:38.108%;width:23.651%;}
+  .about-collage .ac-text-c{left:43.084%;top:62.963%;width:53.320%;}
+  .about-collage .ac-text-d{left:3.665%;top:94.414%;width:29.184%;}
+
+  /* --- адаптив: ниже 1100px коллаж разворачивается в одну колонку;
+     изображения и текст тянутся на всю ширину контентной колонки (.wrap) --- */
+  @media (max-width:1100px){
+    .about-collage{
+      position:static;aspect-ratio:auto;container-type:normal;
+      display:flex;flex-direction:column;align-items:stretch;
+      gap:clamp(30px,7vw,72px);max-width:none;width:100%;
+    }
+    .about-collage > *{position:static;width:100%;}
+    /* перебиваем поштучные ширины из десктопной раскладки (.ac-img-31 и т.п.) */
+    .about-collage .ac-img{width:100%;}
+    .about-collage .ac-gelateria{
+      font-size:clamp(40px,15vw,96px);
+      margin-bottom:calc(clamp(30px,7vw,72px) * -0.72);
+    }
+    .about-collage .ac-monblan{font-size:clamp(20px,7.5vw,44px);}
+    .about-collage .ac-text{width:100%;max-width:none;}
+    .about-collage .ac-text p{font-size:var(--tag-size);line-height:1.6;}
+    .about-collage .ac-text br{display:none;}
+  }
+
+  /* ===== ASSORTMENT ===== */
+  .assort-controls{display:flex;gap:36px;flex-wrap:wrap;}
+  .ac-field{position:relative;}
+  .ac-trigger{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:4px 2px;border:none;background:none;cursor:pointer;
+    font-family:'Graphik',sans-serif;color:var(--ink-soft);
+    transition:color .3s ease;
+  }
+  .ac-trigger:hover, .ac-trigger.open{color:var(--maroon);}
+  .ac-icon{flex:0 0 auto;color:var(--gold);}
+  .ac-trigger-label{font-family:'Graphik',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:400;}
+  .ac-trigger-value{display:none;}
+  .ac-dropdown{
+    position:absolute;top:calc(100% + 14px);left:0;min-width:210px;z-index:20;
+    background:var(--paper);border:1px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:8px;margin:0;list-style:none;
+    opacity:0;visibility:hidden;transform:translateY(-8px);
+    transition:opacity .25s ease, transform .25s ease, visibility .25s;
+  }
+  .ac-dropdown.open{opacity:1;visibility:visible;transform:translateY(0);}
+  .ac-dropdown li{
+    padding:11px 16px;border-radius:11px;font-size:13.5px;color:var(--ink);cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .ac-dropdown li:hover{background:var(--cream-deep);}
+  .ac-dropdown li[aria-selected="true"]{color:var(--maroon);font-weight:600;}
+  .scoop .more{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:'Graphik',sans-serif;font-size:var(--text-size);
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink);
+    font-weight:600;opacity:.85;transition:opacity .3s ease;
+  }
+  .scoop .more svg{width:19px;height:14px;transition:transform .3s ease;}
+  .scoop:hover .more svg{transform:translateX(3px);}
+  .scoop:hover .more{opacity:1;text-decoration:underline;}
+
+  .scoop-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:clamp(14px,1.7vw,40px);   /* равномерная сетка карточек, ~25px как в макете */
+  }
+  .scoop{
+    text-align:left;
+    cursor:pointer;transition:transform .4s ease, background .3s ease;
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;
+    gap:12px;
+    /* фоновая карточка из макета: #483F21 @ 3% */
+    background:rgba(72,63,33,.03);
+    padding:clamp(13px,1.7vw,24px);
+    aspect-ratio:316 / 349;
+  }
+  .scoop:hover{transform:translateY(-4px);background:rgba(72,63,33,.06);}
+  .scoop b{order:1;font-family:'Cranio',serif;font-size:var(--flavor-name-size);font-weight:500;text-transform:lowercase;}
+  .scoop .ball{order:2;align-self:center;width:74%;max-width:240px;aspect-ratio:1;transition:transform .5s var(--ease);}
+  .scoop:hover .ball{transform:scale(1.08) rotate(-4deg);}
+  .scoop .ball img{width:100%;height:100%;object-fit:contain;}
+  .scoop .more{order:3;}
+  .scoop.hide{display:none;}
+
+  .catalog-cta{text-align:center;margin-top:70px;}
+
+  /* ===== VELVET / INSTAGRAM ===== */
+  .velvet{
+    position:relative;background:#5F0B0B;overflow:hidden;
+    aspect-ratio:4320/2823;min-height:500px;display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .velvet .bgimg{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.92;
+  }
+  .velvet::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(30,4,4,.15) 0%, rgba(30,4,4,0) 30%, rgba(30,4,4,0) 65%, rgba(30,4,4,.55) 100%);}
+  .velvet-top, .velvet-bottom{position:relative;z-index:2;padding:56px 0;}
+  .velvet-top .logo-big{
+    display:block;width:clamp(220px,41vw,592px);height:auto;
+  }
+  .velvet-bottom .wrap{display:flex;justify-content:flex-end;}
+  .velvet-bottom .vtext{max-width:760px;text-align:left;}
+  .velvet-bottom p{color:var(--cream);opacity:.9;font-family:'Graphik',sans-serif;font-style:normal;font-size:var(--text-size);line-height:1.6;margin:0;text-transform:uppercase;}
+
+  /* --- мобильные и планшеты: текст на всю ширину контентной колонки --- */
+  @media (max-width:1100px){
+    .velvet-bottom .wrap{display:block;}
+    .velvet-bottom .vtext{max-width:none;text-align:left;}
+  }
+
+  /* ===== TECHNOLOGY ===== */
+  /* лид-абзац: это часть заголовочного блока, а не «контент», поэтому он
+     прижат к заголовку (≈28px), а не на весь --head-gap; сам контент (видео)
+     идёт ниже с обычным отступом */
+  .tech-intro{
+    font-family:'Graphik',sans-serif;font-size:var(--text-size);line-height:1.7;
+    color:var(--ink-soft);max-width:none;
+    margin:calc(28px - var(--head-gap)) 0 44px;
+  }
+  .tech{position:relative;overflow:hidden;margin-bottom:44px;}
+  .tech video, .tech img{width:100%;height:auto;display:block;}
+  .tech-steps{
+    display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+    gap:14px 22px;text-align:center;
+  }
+  .tech-steps span{
+    font-family:'Graphik',sans-serif;font-size:var(--text-size);
+    letter-spacing:.14em;text-transform:uppercase;font-weight:400;color:var(--ink);
+  }
+  .tech-steps .arrow{display:flex;align-items:center;color:var(--gold);}
+  .tech-steps .arrow svg{width:24px;height:16.5px;display:block;}
+
+  /* ===== REVIEWS ===== */
+  .reviews-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;}
+  .review-tab{
+    position:relative;
+    display:flex;align-items:baseline;gap:18px;width:100%;max-width:600px;
+    padding:20px 0;background:none;border:none;border-bottom:2px solid var(--line);
+    border-left:2px solid var(--line);padding-left:16px;
+    cursor:pointer;text-align:left;color:var(--ink-soft);
+    transition:color .3s ease;
+  }
+  .review-tab::before{
+    content:"";position:absolute;left:-2px;top:0;width:2px;height:0;
+    background:var(--heading-red);transition:height .45s ease;
+  }
+  .review-tab::after{
+    content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;
+    background:var(--heading-red);transition:width .45s ease;
+  }
+  .review-tab .rt-num{
+    font-family:'Graphik',sans-serif;font-size:14px;font-weight:600;letter-spacing:.05em;color:inherit;
+  }
+  .review-tab .rt-title{
+    font-family:'Graphik',sans-serif;font-size:17px;text-transform:uppercase;letter-spacing:.01em;color:inherit;
+  }
+  .review-tab.active{color:var(--heading-red);}
+  .review-tab.active::before{height:100%;}
+  .review-tab.active::after{width:100%;transition-delay:.45s;}
+  .review-tab.active .rt-title{font-weight:600;}
+  .review-body{padding:32px 0 0 16px;}
+  .review-body p{
+    font-family:'Graphik',sans-serif;font-size:var(--text-size);line-height:1.7;color:var(--ink);
+    margin:0 0 24px;max-width:600px;text-align:justify;
+  }
+  .review-meta{display:flex;gap:24px;flex-wrap:wrap;font-family:'Graphik',sans-serif;font-size:15px;color:var(--ink-soft);}
+  .review-meta .review-authors{color:var(--heading-red);text-transform:uppercase;letter-spacing:.04em;}
+  .reviews-video{aspect-ratio:656/514;overflow:hidden;background:var(--line);}
+  .reviews-video video{width:100%;height:100%;object-fit:cover;display:block;}
+
+  /* ===== ADDRESS ===== */
+  /* текст слева, прижат к левому краю контентной колонки; картинка (~25% блока,
+     считаем от .addr через контейнерные единицы, не от своей колонки) стоит
+     по центру оставшегося пространства и центрирована по вертикали с текстом */
+  .addr{
+    display:grid;
+    grid-template-columns:minmax(0,360px) 1fr;
+    gap:clamp(28px,3.5vw,72px);
+    align-items:center;
+    container-type:inline-size;
+  }
+  .addr-simple{
+    grid-column:1;
+    max-width:360px;
+    text-align:left;
+  }
+  .addr-simple p{
+    font-family:'Graphik',sans-serif;font-style:normal;font-size:var(--text-size);color:var(--ink-soft);
+    line-height:1.3;margin:0 0 18px;   /* межстрочный интервал уменьшен ещё немного, было 1.4 */
+  }
+  .addr-simple p b{color:var(--ink);font-style:normal;}
+  .addr-simple a{border-bottom:1px solid var(--gold);transition:opacity .3s ease;}
+  .addr-simple a:hover{opacity:.7;}
+  .insta-card{
+    grid-column:2;justify-self:center;
+    width:37.5cqi;overflow:hidden;box-shadow:var(--shadow);   /* было 25cqi — увеличено в 1.5 раза */
+  }
+  .insta-card img{width:100%;display:block;}
+  /* строка @monblan_gelateria над картинкой — только на мобильных/планшетах */
+  .insta-handle{display:none;}
+
+  /* --- адаптив: ниже 1100px (мобильные и планшеты) ---
+     картинка (Group 25.2) на всю ширину контентной колонки, над ней подпись @monblan_gelateria */
+  @media (max-width:1100px){
+    .addr{grid-template-columns:1fr;justify-items:center;text-align:center;}
+    .addr-simple{grid-column:1;max-width:none;text-align:center;}
+    .addr-simple p{max-width:none;text-align:center;}
+    .insta-handle{
+      display:block;font-family:'Graphik',sans-serif;font-size:var(--text-size);
+      color:var(--ink);text-align:center;margin:0 0 12px;
+    }
+    .insta-card{grid-column:1;width:100%;max-width:none;}
+  }
+
+  /* ===== FOOTER ===== */
+  footer{
+    background:var(--cream);
+    color:var(--heading-red);padding:90px 0 64px;position:relative;overflow:hidden;
+  }
+  .foot-bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;}
+  .foot-grid{position:relative;z-index:2;}
+  .foot-logo{
+    display:block;font-family:'Cranio',serif;font-style:italic;color:var(--heading-red);
+    font-size:clamp(48px,8.5vw,120px);line-height:.95;margin-bottom:clamp(60px,10vw,150px);
+  }
+  .foot-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
+  .foot-info{
+    font-family:'Graphik',sans-serif;font-size:14px;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--heading-red);line-height:1.8;
+  }
+  .foot-info a{display:block;opacity:.85;transition:opacity .3s ease;}
+  .foot-info a:hover{opacity:1;}
+  .foot-nav{display:flex;gap:34px;flex-wrap:wrap;font-family:'Graphik',sans-serif;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:var(--heading-red);font-weight:500;}
+  .foot-nav a{opacity:.85;transition:opacity .3s ease;}
+  .foot-nav a:hover{opacity:1;}
+
+  /* ===== MODAL ===== */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(20,4,8,.55);backdrop-filter:blur(4px);
+    z-index:2000;display:flex;align-items:center;justify-content:center;padding:24px;
+    opacity:0;pointer-events:none;transition:opacity .4s ease;
+  }
+  .modal-bg.open{opacity:1;pointer-events:auto;}
+  .modal{
+    background:var(--paper);border-radius:26px;max-width:520px;width:100%;overflow:hidden;
+    transform:scale(.9) translateY(20px);transition:transform .45s var(--ease);
+    box-shadow:0 40px 100px rgba(0,0,0,.4);
+  }
+  .modal-bg.open .modal{transform:scale(1) translateY(0);}
+  .modal{max-width:1160px;padding:56px 64px 44px;position:relative;}
+  .modal-close{
+    position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:50%;
+    background:rgba(43,24,16,.08);color:var(--heading-red);border:none;cursor:pointer;font-size:16px;
+    display:flex;align-items:center;justify-content:center;z-index:2;
+  }
+  .fm-brand{
+    font-family:'Cranio',serif;font-style:italic;font-weight:500;
+    font-size:clamp(32px,4vw,44px);color:var(--heading-red);margin-bottom:28px;line-height:1;
+  }
+  .fm-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:60px;align-items:start;}
+  .fm-photo{aspect-ratio:1/1;background:var(--cream-deep);border-radius:12px;overflow:hidden;}
+  .fm-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .fm-info h3{
+    font-family:'Graphik',sans-serif;font-weight:600;font-size:22px;
+    text-transform:uppercase;letter-spacing:.02em;color:var(--heading-red);margin:0 0 20px;
+  }
+  .fm-info p{
+    font-family:'Graphik',sans-serif;font-size:var(--text-size);line-height:1.7;color:var(--heading-red);
+    text-align:justify;margin:0 0 32px;
+  }
+  .fm-kbju{display:none;}
+  .fm-kbju.show{display:block;}
+  .fm-kbju-label{font-family:'Graphik',sans-serif;font-size:16px;font-weight:600;color:var(--heading-red);margin-bottom:8px;}
+  .fm-kbju-lines{font-family:'Graphik',sans-serif;font-size:16px;line-height:1.6;color:var(--heading-red);}
+  .fm-nav{display:none;justify-content:flex-end;gap:36px;margin-top:44px;}
+  .fm-nav.show{display:flex;}
+  .fm-nav button{
+    display:inline-flex;align-items:center;gap:10px;
+    background:none;border:none;padding:0;cursor:pointer;
+    font-family:'Graphik',sans-serif;font-size:15px;color:var(--heading-red);
+    transition:opacity .3s ease;
+  }
+  .fm-nav button svg{width:28px;height:15px;display:block;flex:0 0 auto;}
+  .fm-nav button:hover{opacity:.65;}
+  @media(max-width:760px){
+    .modal{padding:70px 24px 32px;}
+    .fm-grid{grid-template-columns:1fr;gap:28px;}
+  }
+
+
+  @media(max-width:900px){
+    .scoop-grid{grid-template-columns:repeat(2,1fr);gap:clamp(12px,3vw,20px);}
+    .scoop{aspect-ratio:auto;padding:clamp(14px,4vw,20px);gap:16px;}
+    .scoop .ball{width:70%;}
+    .velvet-grid{grid-template-columns:1fr;gap:34px;text-align:center;}
+    .velvet-grid p{margin-left:auto;margin-right:auto;}
+    .reviews-grid{grid-template-columns:1fr;gap:32px;}
+    .foot-row{flex-direction:column;align-items:flex-start;gap:28px;}
+    .section{padding:40px 0;}
+    /* мобильный: рамка меню снова по центру, без правой ленты превью */
+    .nav-overlay{display:flex;align-items:center;justify-content:center;}
+    .nav-box{position:static;left:auto;top:auto;width:88vw;height:auto;padding:6vh 0;}
+    .nav-address{top:24px;left:24px;font-size:11px;letter-spacing:.08em;}
+    .nav-list{padding-left:36px;padding-right:20px;gap:22px;}
+    .nav-tags{width:34px;}
+    .nav-tag{font-size:10px;}
+    .nav-tag-top{top:16%;}
+    .nav-tag-bottom{top:84%;}
+    /* на мобильном лента контента не помещается рядом с меню — оставляем только список пунктов */
+    .nav-content-viewport{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="preloader" id="preloader">
+  <video class="preloader-video" id="preloaderVideo" autoplay muted playsinline preload="auto">
+    <source src="assets/video/preloader.mp4" type="video/mp4">
+  </video>
+  <div class="preloader-brand"><b>Gelateria MonBlan</b><span>Джелато &amp; шербет</span></div>
+</div>
+<script>
+(function(){
+  var html = document.documentElement;
+  html.classList.add('is-loading');
+  var pre = document.getElementById('preloader');
+  var video = document.getElementById('preloaderVideo');
+
+  function loadImg(src){
+    return new Promise(function(resolve){
+      var img = new Image();
+      img.onload = resolve; img.onerror = resolve;
+      img.src = src;
+    });
+  }
+
+  // the hero background must be ready before we reveal it
+  var heroReady = loadImg('assets/img/main.png');
+
+  // wait for the preloader video to finish playing once (with a safety cap)
+  var videoDone = new Promise(function(resolve){
+    if(!video){ resolve(); return; }
+    video.addEventListener('ended', resolve, {once:true});
+    video.addEventListener('error', resolve, {once:true});
+  });
+  var maxWait = new Promise(function(r){ setTimeout(r, 9000); });
+
+  requestAnimationFrame(function(){ pre.classList.add('play'); });
+
+  Promise.race([videoDone, maxWait]).then(function(){ return heroReady; }).then(function(){
+    pre.classList.add('done');
+    html.classList.remove('is-loading');
+    setTimeout(function(){ pre.remove(); }, 1000);
+  });
+})();
+</script>
+
+<header id="siteHeader">
+  <div class="wrap">
+    <a href="#top" class="logo">Gelateria<span>MonBlan</span></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Открыть меню">
+      <span class="menu-label">Меню</span>
+      <span class="bars"><span></span><span></span><span></span></span>
+    </button>
+  </div>
+</header>
+
+<div class="nav-overlay" id="navOverlay">
+  <div class="nav-address">Санкт-Петербург, ул. Пестеля 13-15</div>
+  <div class="nav-box" id="navBox">
+    <div class="nav-tags">
+      <span class="nav-tag nav-tag-top">Джелато</span>
+      <span class="nav-tag nav-tag-bottom">Кофейня</span>
+    </div>
+    <nav class="nav-list" id="navList">
+      <a href="#assortment" class="nav-link" data-target="catalog">Каталог</a>
+      <a href="#about" class="nav-link" data-target="history">История</a>
+      <a href="#reviews" class="nav-link" data-target="reviews">Отзывы</a>
+      <a href="#address" class="nav-link" data-target="contacts">Контакты</a>
+      <a href="#flavors" class="nav-link" data-target="flavors">Вкусы месяца</a>
+      <a href="#technology" class="nav-link" data-target="production">Производство</a>
+    </nav>
+  </div>
+  <div class="nav-content-viewport" id="navContentViewport" aria-hidden="true">
+    <div class="nav-content-track" id="navContentTrack">
+      <!-- порядок превью 1:1 совпадает с порядком пунктов меню сверху вниз:
+           так «кратчайший путь» до нужного изображения = прямой скролл в его
+           сторону (вкусы месяца → производство листает вниз, т.к. производство
+           стоит под вкусами месяца). Ровно 6 изображений, без дублей-призраков. -->
+      <div class="nav-content-block" data-id="catalog"><img src="assets/img/nav/catalog.jpg" alt="Ассортимент"></div>
+      <div class="nav-content-block" data-id="history"><img src="assets/img/nav/history.jpg" alt="Место встречи изменить нельзя"></div>
+      <div class="nav-content-block" data-id="reviews"><img src="assets/img/nav/reviews.jpg" alt="Отзывы наших гостей"></div>
+      <div class="nav-content-block" data-id="contacts"><img src="assets/img/nav/contacts.jpg" alt="Адрес"></div>
+      <div class="nav-content-block" data-id="flavors"><img src="assets/img/nav/flavors.jpg" alt="Вкусы месяца"></div>
+      <div class="nav-content-block" data-id="production"><img src="assets/img/nav/production.jpg" alt="Технология производства"></div>
+    </div>
+  </div>
+</div>
+
+<section class="hero light-bg" id="top">
+  <img class="poster" src="assets/img/main.png" alt="Джелато в серебряной креманке">
+  <div class="hero-inner">
+    <div class="wrap hero-top">
+      <div class="hero-logo reveal">
+        <span class="hl-big">Gelateria</span>
+        <span class="hl-small">MonBlan</span>
+      </div>
+    </div>
+    <div class="wrap hero-center">
+      <div class="tag reveal">Кофейня для ценителей<br>настоящего мороженого</div>
+      <a href="#assortment" class="btn-frame reveal">Каталог</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="flavors">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2>Вкусы месяца</h2>
+      </div>
+    </div>
+
+    <div class="ice-gallery" id="iceGallery"></div>
+  </div>
+</section>
+
+<section class="section banner-static" id="banner230">
+  <div class="banner-img reveal-scale">
+    <img src="assets/img/coast.png" alt="Единая стоимость шарика мороженого — 230₽">
+  </div>
+  <div class="wrap banner-cta">
+    <a href="#assortment" class="btn-frame reveal">Каталог</a>
+  </div>
+</section>
+
+<section class="section" id="technology">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2>Технология производства</h2>
+      </div>
+    </div>
+    <p class="tech-intro reveal">Джелато создаётся поэтапно: от подготовки и пастеризации смеси до её созревания, взбивания и бережной заморозки. Каждый этап важен, чтобы сохранить натуральный вкус, кремовую текстуру и идеальную плотность.</p>
+    <div class="tech reveal-scale">
+      <video autoplay muted loop playsinline poster="assets/img/background.png">
+        <source src="assets/video/scene2.1.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="tech-steps reveal">
+      <span>Отбор ингредиентов</span><span class="arrow"><svg viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg"><path d="M3.503 4.46329C3.39006 4.45749 3.28174 4.5195 3.20188 4.63912C3.12201 4.75855 3.07715 4.92572 3.07715 5.1006C3.07715 5.27547 3.12201 5.4427 3.20188 5.56213C3.28174 5.68175 3.39005 5.74376 3.503 5.7379C3.70872 5.72732 3.9179 5.71668 4.12744 5.70604C6.00083 5.61044 7.87824 5.51484 9.75163 5.41925C11.6262 5.32365 13.5008 5.22806 15.3754 5.13246C15.5837 5.12188 15.7919 5.11124 16.0002 5.1006C15.7919 5.09002 15.5837 5.07937 15.3754 5.06873C13.5008 4.97314 11.6262 4.87754 9.75163 4.78194C7.87824 4.68635 6.00083 4.59075 4.12744 4.49516C3.91791 4.48458 3.70872 4.47394 3.503 4.46329Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.03854 15.8084 4.97552 15.7128 4.9125C13.9921 3.77803 12.2714 2.64357 10.5507 1.50905C10.4551 1.44603 10.3595 1.38301 10.2639 1.31999C10.2064 1.28204 10.1355 1.26721 10.066 1.27994C9.99653 1.29258 9.93403 1.33175 9.89318 1.38764C9.85238 1.44354 9.83677 1.5112 9.85067 1.57461C9.86457 1.63807 9.90687 1.69202 9.96733 1.72587C10.0679 1.78211 10.1684 1.83835 10.2689 1.89464C12.0786 2.90736 13.8882 3.92007 15.6979 4.93279C15.7985 4.98903 15.899 5.04532 15.9995 5.10156Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.16458 15.8084 5.2276 15.7128 5.29062C13.9921 6.42509 12.2714 7.55956 10.5507 8.69407C10.4551 8.75709 10.3595 8.82011 10.2639 8.88314C10.2064 8.92108 10.1355 8.93591 10.066 8.92318C9.99653 8.91055 9.93403 8.87138 9.89318 8.81548C9.85238 8.75958 9.83677 8.69193 9.85067 8.62852C9.86457 8.56506 9.90687 8.51111 9.96733 8.47726C10.0679 8.42102 10.1684 8.36478 10.2689 8.30849C12.0786 7.29577 13.8882 6.28305 15.6979 5.27033C15.7985 5.21409 15.899 5.1578 15.9995 5.10156Z" fill="currentColor"/></svg></span>
+      <span>Пастеризация</span><span class="arrow"><svg viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg"><path d="M3.503 4.46329C3.39006 4.45749 3.28174 4.5195 3.20188 4.63912C3.12201 4.75855 3.07715 4.92572 3.07715 5.1006C3.07715 5.27547 3.12201 5.4427 3.20188 5.56213C3.28174 5.68175 3.39005 5.74376 3.503 5.7379C3.70872 5.72732 3.9179 5.71668 4.12744 5.70604C6.00083 5.61044 7.87824 5.51484 9.75163 5.41925C11.6262 5.32365 13.5008 5.22806 15.3754 5.13246C15.5837 5.12188 15.7919 5.11124 16.0002 5.1006C15.7919 5.09002 15.5837 5.07937 15.3754 5.06873C13.5008 4.97314 11.6262 4.87754 9.75163 4.78194C7.87824 4.68635 6.00083 4.59075 4.12744 4.49516C3.91791 4.48458 3.70872 4.47394 3.503 4.46329Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.03854 15.8084 4.97552 15.7128 4.9125C13.9921 3.77803 12.2714 2.64357 10.5507 1.50905C10.4551 1.44603 10.3595 1.38301 10.2639 1.31999C10.2064 1.28204 10.1355 1.26721 10.066 1.27994C9.99653 1.29258 9.93403 1.33175 9.89318 1.38764C9.85238 1.44354 9.83677 1.5112 9.85067 1.57461C9.86457 1.63807 9.90687 1.69202 9.96733 1.72587C10.0679 1.78211 10.1684 1.83835 10.2689 1.89464C12.0786 2.90736 13.8882 3.92007 15.6979 4.93279C15.7985 4.98903 15.899 5.04532 15.9995 5.10156Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.16458 15.8084 5.2276 15.7128 5.29062C13.9921 6.42509 12.2714 7.55956 10.5507 8.69407C10.4551 8.75709 10.3595 8.82011 10.2639 8.88314C10.2064 8.92108 10.1355 8.93591 10.066 8.92318C9.99653 8.91055 9.93403 8.87138 9.89318 8.81548C9.85238 8.75958 9.83677 8.69193 9.85067 8.62852C9.86457 8.56506 9.90687 8.51111 9.96733 8.47726C10.0679 8.42102 10.1684 8.36478 10.2689 8.30849C12.0786 7.29577 13.8882 6.28305 15.6979 5.27033C15.7985 5.21409 15.899 5.1578 15.9995 5.10156Z" fill="currentColor"/></svg></span>
+      <span>Созревание смеси</span><span class="arrow"><svg viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg"><path d="M3.503 4.46329C3.39006 4.45749 3.28174 4.5195 3.20188 4.63912C3.12201 4.75855 3.07715 4.92572 3.07715 5.1006C3.07715 5.27547 3.12201 5.4427 3.20188 5.56213C3.28174 5.68175 3.39005 5.74376 3.503 5.7379C3.70872 5.72732 3.9179 5.71668 4.12744 5.70604C6.00083 5.61044 7.87824 5.51484 9.75163 5.41925C11.6262 5.32365 13.5008 5.22806 15.3754 5.13246C15.5837 5.12188 15.7919 5.11124 16.0002 5.1006C15.7919 5.09002 15.5837 5.07937 15.3754 5.06873C13.5008 4.97314 11.6262 4.87754 9.75163 4.78194C7.87824 4.68635 6.00083 4.59075 4.12744 4.49516C3.91791 4.48458 3.70872 4.47394 3.503 4.46329Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.03854 15.8084 4.97552 15.7128 4.9125C13.9921 3.77803 12.2714 2.64357 10.5507 1.50905C10.4551 1.44603 10.3595 1.38301 10.2639 1.31999C10.2064 1.28204 10.1355 1.26721 10.066 1.27994C9.99653 1.29258 9.93403 1.33175 9.89318 1.38764C9.85238 1.44354 9.83677 1.5112 9.85067 1.57461C9.86457 1.63807 9.90687 1.69202 9.96733 1.72587C10.0679 1.78211 10.1684 1.83835 10.2689 1.89464C12.0786 2.90736 13.8882 3.92007 15.6979 4.93279C15.7985 4.98903 15.899 5.04532 15.9995 5.10156Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.16458 15.8084 5.2276 15.7128 5.29062C13.9921 6.42509 12.2714 7.55956 10.5507 8.69407C10.4551 8.75709 10.3595 8.82011 10.2639 8.88314C10.2064 8.92108 10.1355 8.93591 10.066 8.92318C9.99653 8.91055 9.93403 8.87138 9.89318 8.81548C9.85238 8.75958 9.83677 8.69193 9.85067 8.62852C9.86457 8.56506 9.90687 8.51111 9.96733 8.47726C10.0679 8.42102 10.1684 8.36478 10.2689 8.30849C12.0786 7.29577 13.8882 6.28305 15.6979 5.27033C15.7985 5.21409 15.899 5.1578 15.9995 5.10156Z" fill="currentColor"/></svg></span>
+      <span>Фризерование</span><span class="arrow"><svg viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg"><path d="M3.503 4.46329C3.39006 4.45749 3.28174 4.5195 3.20188 4.63912C3.12201 4.75855 3.07715 4.92572 3.07715 5.1006C3.07715 5.27547 3.12201 5.4427 3.20188 5.56213C3.28174 5.68175 3.39005 5.74376 3.503 5.7379C3.70872 5.72732 3.9179 5.71668 4.12744 5.70604C6.00083 5.61044 7.87824 5.51484 9.75163 5.41925C11.6262 5.32365 13.5008 5.22806 15.3754 5.13246C15.5837 5.12188 15.7919 5.11124 16.0002 5.1006C15.7919 5.09002 15.5837 5.07937 15.3754 5.06873C13.5008 4.97314 11.6262 4.87754 9.75163 4.78194C7.87824 4.68635 6.00083 4.59075 4.12744 4.49516C3.91791 4.48458 3.70872 4.47394 3.503 4.46329Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.03854 15.8084 4.97552 15.7128 4.9125C13.9921 3.77803 12.2714 2.64357 10.5507 1.50905C10.4551 1.44603 10.3595 1.38301 10.2639 1.31999C10.2064 1.28204 10.1355 1.26721 10.066 1.27994C9.99653 1.29258 9.93403 1.33175 9.89318 1.38764C9.85238 1.44354 9.83677 1.5112 9.85067 1.57461C9.86457 1.63807 9.90687 1.69202 9.96733 1.72587C10.0679 1.78211 10.1684 1.83835 10.2689 1.89464C12.0786 2.90736 13.8882 3.92007 15.6979 4.93279C15.7985 4.98903 15.899 5.04532 15.9995 5.10156Z" fill="currentColor"/><path d="M15.9995 5.10156C15.904 5.16458 15.8084 5.2276 15.7128 5.29062C13.9921 6.42509 12.2714 7.55956 10.5507 8.69407C10.4551 8.75709 10.3595 8.82011 10.2639 8.88314C10.2064 8.92108 10.1355 8.93591 10.066 8.92318C9.99653 8.91055 9.93403 8.87138 9.89318 8.81548C9.85238 8.75958 9.83677 8.69193 9.85067 8.62852C9.86457 8.56506 9.90687 8.51111 9.96733 8.47726C10.0679 8.42102 10.1684 8.36478 10.2689 8.30849C12.0786 7.29577 13.8882 6.28305 15.6979 5.27033C15.7985 5.21409 15.899 5.1578 15.9995 5.10156Z" fill="currentColor"/></svg></span>
+      <span>Подача</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2>Место встречи изменить нельзя</h2>
+      </div>
+    </div>
+    <div class="about-collage">
+
+      <figure class="ac-img ac-img-31 reveal-scale">
+        <img src="assets/img/cafe3.jpg" alt="Вход в джелатерию Gelateria MonBlan">
+      </figure>
+
+      <span class="ac-gelateria reveal">Gelateria</span>
+      <span class="ac-monblan reveal">MonBlan</span>
+
+      <figure class="ac-img ac-img-11 reveal-scale">
+        <img src="assets/img/cafe1.jpg" alt="Витрина с джелато и кофейная стойка">
+      </figure>
+
+      <figure class="ac-img ac-img-21 reveal-scale">
+        <img src="assets/img/cafe2.jpg" alt="Уютный зал с деревом и мягкими креслами">
+      </figure>
+
+      <div class="ac-text ac-text-a reveal">
+        <p>Джелатерия не стремится впечатлить с первого взгляда.<br>
+        Она раскрывается постепенно.<br>
+        Сначала вы замечаете архитектуру. Потом свет.<br>
+        Потом аромат свежих вафельных рожков.<br>
+        Потом понимаете, что уже выбираете дату следующего визита.<br>
+        Именно так появляются любимые места.<br>
+        Настоящие любимые места.</p>
+      </div>
+
+      <div class="ac-text ac-text-b reveal">
+        <p>Мы создали пространство, которое не требует спешки.<br>
+        Можно прийти одному.<br>
+        Можно привести друзей.<br>
+        Можно отметить важное событие или просто сделать обычный день немного красивее.<br>
+        Иногда лучший десерт<br>
+        — это не только вкус.<br>
+        Это место, где вы его попробовали.</p>
+      </div>
+
+      <figure class="ac-img ac-img-41 reveal-scale">
+        <img src="assets/img/cafe4.jpg" alt="Витрина-прилавок с джелато">
+      </figure>
+
+      <figure class="ac-img ac-img-51 reveal-scale">
+        <img src="assets/img/cafe5.jpg" alt="Зал с высокими окнами">
+      </figure>
+
+      <div class="ac-text ac-text-c reveal">
+        <p>Не все красивые места становятся любимыми.<br>
+        Любимыми становятся те, в которых остаётся часть вашего дня.<br>
+        Здесь солнце проходит через высокие окна и каждый час меняет интерьер, словно декоратор, который никогда не повторяется. Стекло ловит свет, металл отвечает мягким отражением, а джелато становится последним штрихом в этой композиции.</p>
+      </div>
+
+      <figure class="ac-img ac-img-61 reveal-scale">
+        <img src="assets/img/cafe6.jpg" alt="Барная стойка с высокими стульями">
+      </figure>
+
+      <div class="ac-text ac-text-d reveal">
+        <p>Здесь хочется задержаться не на пять минут, а на целый разговор.<br>
+        Заказать свежесваренный кофе.<br>
+        Попробовать новый вкус мороженого.<br>
+        А потом заказать чего-нибудь ещё,<br>
+        чтобы задержаться подольше.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section" id="assortment">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2>Ассортимент</h2>
+      </div>
+      <div class="assort-controls">
+        <div class="ac-field">
+          <button type="button" class="ac-trigger" id="filterTrigger" aria-haspopup="listbox" aria-expanded="false">
+            <svg class="ac-icon" width="29" height="9" viewBox="0 0 19 6" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="0.5" y1="2" x2="18.5" y2="2" stroke="currentColor" stroke-linecap="round"/><line x1="0.5" y1="5" x2="18.5" y2="5" stroke="currentColor" stroke-linecap="round"/><circle cx="4" cy="1.5" r="1" fill="currentColor"/><circle cx="15" cy="4.5" r="1" fill="currentColor"/></svg>
+            <span class="ac-trigger-text"><span class="ac-trigger-label">Фильтр</span><span class="ac-trigger-value" id="filterValue">Все вкусы</span></span>
+          </button>
+          <ul class="ac-dropdown" id="filterDropdown" role="listbox">
+            <li role="option" data-value="all" aria-selected="true">Все вкусы</li>
+            <li role="option" data-value="creamy" aria-selected="false">Сливочные</li>
+            <li role="option" data-value="sorbet" aria-selected="false">Сорбет</li>
+          </ul>
+        </div>
+        <div class="ac-field">
+          <button type="button" class="ac-trigger" id="sortTrigger" aria-haspopup="listbox" aria-expanded="false">
+            <svg class="ac-icon" width="14" height="20" viewBox="0 0 9 13" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.20093 0.547782C6.20468 0.436569 6.16486 0.329927 6.08808 0.251256C6.01142 0.172627 5.90409 0.128428 5.79184 0.128428C5.67959 0.128428 5.57225 0.172627 5.4956 0.251256C5.41881 0.329927 5.379 0.436569 5.38275 0.547782C5.38956 0.750372 5.39638 0.956402 5.4032 1.16272C5.46457 3.00755 5.52593 4.85636 5.58729 6.70114C5.64866 8.54714 5.71002 10.3932 5.77138 12.2392C5.7782 12.4443 5.78502 12.6494 5.79184 12.8545C5.79865 12.6494 5.80547 12.4443 5.81229 12.2392C5.87366 10.3932 5.93502 8.54714 5.99638 6.70114C6.05775 4.85636 6.11911 3.00755 6.18047 1.16272C6.18729 0.956402 6.19411 0.750372 6.20093 0.547782Z" fill="currentColor"/><path d="M5.79183 12.8545C5.8449 12.7535 5.89797 12.6525 5.95105 12.5515C6.90634 10.7336 7.86164 8.91577 8.81694 7.09787C8.87001 6.99689 8.92308 6.89591 8.97615 6.79493C9.00191 6.74595 9.00722 6.68904 8.99004 6.63625C8.97291 6.58354 8.9347 6.53925 8.88468 6.51359C8.83466 6.48796 8.77717 6.48318 8.72573 6.5008C8.67424 6.51837 8.63301 6.55686 8.61025 6.60735C8.56328 6.71148 8.5163 6.81561 8.46933 6.91973C7.6238 8.79387 6.77828 10.668 5.93275 12.5421C5.88578 12.6463 5.8388 12.7504 5.79183 12.8545Z" fill="currentColor"/><path d="M3.19915 12.5806C3.19543 12.6919 3.23523 12.7985 3.31202 12.8772C3.38868 12.9558 3.49599 13 3.60824 13C3.7205 13 3.82784 12.9558 3.90451 12.8772C3.98129 12.7985 4.0211 12.6919 4.01733 12.5806C4.01054 12.3781 4.00371 12.1721 3.99688 11.9657C3.93552 10.1209 3.87415 8.27211 3.81279 6.42728C3.75142 4.58128 3.69006 2.73528 3.6287 0.889284C3.62191 0.684177 3.61507 0.479071 3.60824 0.273965C3.60145 0.479071 3.59462 0.684177 3.58779 0.889284C3.52642 2.73528 3.46506 4.58128 3.4037 6.42728C3.34233 8.27211 3.28097 10.1209 3.21961 11.9657C3.21282 12.1721 3.20598 12.3781 3.19915 12.5806Z" fill="currentColor"/><path d="M3.6084 0.273856C3.55554 0.348837 3.50269 0.423818 3.44983 0.498798C2.49837 1.84841 1.54691 3.19802 0.595403 4.54763C0.542548 4.62261 0.489694 4.69759 0.436839 4.77257C0.405012 4.81765 0.392576 4.87326 0.403253 4.92781C0.413848 4.98229 0.446699 5.03131 0.49358 5.06335C0.540462 5.09535 0.597203 5.10759 0.650385 5.09669C0.703608 5.08579 0.748853 5.05261 0.777244 5.00519C0.824412 4.92635 0.87158 4.84747 0.918789 4.76863C1.76814 3.34924 2.6175 1.92985 3.46685 0.510414C3.51402 0.431576 3.56123 0.352737 3.6084 0.273856Z" fill="currentColor"/></svg>
+            <span class="ac-trigger-text"><span class="ac-trigger-label">Сортировка</span><span class="ac-trigger-value" id="sortValue">По умолчанию</span></span>
+          </button>
+          <ul class="ac-dropdown" id="sortDropdown" role="listbox">
+            <li role="option" data-value="default" aria-selected="true">По умолчанию</li>
+            <li role="option" data-value="az" aria-selected="false">А—Я</li>
+            <li role="option" data-value="za" aria-selected="false">Я—А</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="scoop-grid reveal" id="scoopGrid">
+      <div class="scoop" data-cat="creamy" data-name="vanila" data-img="assets/img/catalog1@3x.png"><div class="ball"><img src="assets/img/catalog1@3x.png" alt="vanila"></div><b>vanila</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="sorbet" data-name="strawberry" data-img="assets/img/catalog2@3x.png"><div class="ball"><img src="assets/img/catalog2@3x.png" alt="strawberry"></div><b>strawberry</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="pistachio" data-img="assets/img/catalog3@3x.png"><div class="ball"><img src="assets/img/catalog3@3x.png" alt="pistachio"></div><b>pistachio</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="matcha" data-img="assets/img/catalog4@3x.png"><div class="ball"><img src="assets/img/catalog4@3x.png" alt="matcha"></div><b>matcha</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+
+      <div class="scoop" data-cat="creamy" data-name="salted caramel" data-img="assets/img/catalog5@3x.png"><div class="ball"><img src="assets/img/catalog5@3x.png" alt="salted caramel"></div><b>salted caramel</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="chocolate" data-img="assets/img/catalog6@3x.png"><div class="ball"><img src="assets/img/catalog6@3x.png" alt="chocolate"></div><b>chocolate</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="sorbet" data-name="lemon" data-img="assets/img/catalog7@3x.png"><div class="ball"><img src="assets/img/catalog7@3x.png" alt="lemon"></div><b>lemon</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="coconut" data-img="assets/img/catalog8@3x.png"><div class="ball"><img src="assets/img/catalog8@3x.png" alt="coconut"></div><b>coconut</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+
+      <div class="scoop" data-cat="sorbet" data-name="nut" data-img="assets/img/catalog9@3x.png"><div class="ball"><img src="assets/img/catalog9@3x.png" alt="nut"></div><b>nut</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="sorbet" data-name="mint-choco" data-img="assets/img/catalog10@3x.png"><div class="ball"><img src="assets/img/catalog10@3x.png" alt="mint choco"></div><b>mint-choco</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="lime-strawberry-basil" data-img="assets/img/catalog11@3x.png"><div class="ball"><img src="assets/img/catalog11@3x.png" alt="lime strawberry basil"></div><b>lime-strawberry-basil</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="sorbet" data-name="wild berries" data-img="assets/img/catalog12@3x.png"><div class="ball"><img src="assets/img/catalog12@3x.png" alt="wild berries"></div><b>wild berries</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+
+      <div class="scoop" data-cat="sorbet" data-name="blueberry" data-img="assets/img/catalog13@3x.png"><div class="ball"><img src="assets/img/catalog13@3x.png" alt="blueberry"></div><b>blueberry</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="three chocolates" data-img="assets/img/catalog14@3x.png"><div class="ball"><img src="assets/img/catalog14@3x.png" alt="three chocolates"></div><b>three chocolates</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="bird's milk" data-img="assets/img/catalog15@3x.png"><div class="ball"><img src="assets/img/catalog15@3x.png" alt="birds milk"></div><b>bird's milk</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="tiramisu" data-img="assets/img/catalog16@3x.png"><div class="ball"><img src="assets/img/catalog16@3x.png" alt="tiramisu"></div><b>tiramisu</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+
+      <div class="scoop" data-cat="creamy" data-name="kiwi-banana" data-img="assets/img/catalog17@3x.png"><div class="ball"><img src="assets/img/catalog17@3x.png" alt="kiwi banana"></div><b>kiwi-banana</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="sorbet" data-name="grapefruit-tangerine" data-img="assets/img/catalog18@3x.png"><div class="ball"><img src="assets/img/catalog18@3x.png" alt="grapefruit tangerine"></div><b>grapefruit-tangerine</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="sorbet" data-name="pineapple-coconut" data-img="assets/img/catalog19@3x.png"><div class="ball"><img src="assets/img/catalog19@3x.png" alt="pineapple coconut"></div><b>pineapple-coconut</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+      <div class="scoop" data-cat="creamy" data-name="cheese" data-img="assets/img/catalog20@3x.png"><div class="ball"><img src="assets/img/catalog20@3x.png" alt="cheese"></div><b>cheese</b><span class="more">подробнее<svg viewBox="0 0 13 9" xmlns="http://www.w3.org/2000/svg"><path d="M0.564384 5.94215C0.453171 5.94574 0.346529 5.90758 0.267858 5.834C0.189229 5.76054 0.145029 5.65767 0.145029 5.55011C0.145029 5.44254 0.189229 5.33967 0.267858 5.26621C0.346529 5.19262 0.453171 5.15446 0.564384 5.15806C0.766974 5.16459 0.973004 5.17113 1.17933 5.17766C3.02415 5.23647 4.87296 5.29528 6.71775 5.35408C8.56374 5.41289 10.4098 5.4717 12.2558 5.5305C12.4609 5.53703 12.666 5.54357 12.8711 5.55011C12.666 5.55664 12.4609 5.56317 12.2558 5.56971C10.4098 5.62851 8.56374 5.68732 6.71775 5.74613C4.87296 5.80493 3.02415 5.86374 1.17933 5.92255C0.973004 5.92908 0.766974 5.93562 0.564384 5.94215Z" fill="currentColor"/><path d="M12.8711 5.55051C12.7701 5.60137 12.6691 5.65223 12.5681 5.70309C10.7502 6.61858 8.93237 7.53407 7.11448 8.44956C7.01349 8.50043 6.91251 8.55129 6.81153 8.60215C6.76255 8.62683 6.70565 8.63192 6.65285 8.61545C6.60014 8.59904 6.55585 8.56242 6.53019 8.51448C6.50457 8.46655 6.49979 8.41146 6.5174 8.36216C6.53497 8.31281 6.57347 8.2733 6.62396 8.25149C6.72808 8.20647 6.83221 8.16146 6.93633 8.11644C8.81047 7.30614 10.6846 6.49585 12.5587 5.68555C12.6629 5.64054 12.767 5.59552 12.8711 5.55051Z" fill="currentColor"/><path d="M0.419355 3.06626C0.308136 3.06269 0.201471 3.10084 0.122826 3.17443C0.0441823 3.2479 3.85691e-07 3.35073 3.75509e-07 3.45831C3.65328e-07 3.56588 0.0441823 3.66876 0.122826 3.74223C0.201471 3.81581 0.308135 3.85396 0.419355 3.85035C0.621937 3.84384 0.827937 3.8373 1.03428 3.83075C2.87911 3.77194 4.72789 3.71314 6.57272 3.65433C8.41872 3.59552 10.2647 3.53672 12.1107 3.47791C12.3158 3.4714 12.5209 3.46485 12.726 3.45831C12.5209 3.4518 12.3158 3.44525 12.1107 3.4387C10.2647 3.3799 8.41872 3.32109 6.57272 3.26228C4.72789 3.20348 2.87911 3.14467 1.03428 3.08586C0.827941 3.07936 0.621937 3.07281 0.419355 3.06626Z" fill="currentColor"/><path d="M12.7261 3.45801C12.6512 3.40736 12.5762 3.3567 12.5012 3.30605C11.1516 2.39423 9.80198 1.48241 8.45237 0.570554C8.37739 0.519902 8.30241 0.46925 8.22743 0.418598C8.18235 0.388096 8.12674 0.376178 8.07219 0.386411C8.01771 0.396565 7.96869 0.428046 7.93665 0.472975C7.90465 0.517903 7.89241 0.57228 7.90331 0.623246C7.91421 0.674251 7.94739 0.717611 7.99482 0.744819C8.07365 0.790021 8.15253 0.835224 8.23137 0.880467C9.65076 1.69443 11.0702 2.5084 12.4896 3.32236C12.5684 3.36756 12.6473 3.41281 12.7261 3.45801Z" fill="currentColor"/></svg></span></div>
+    </div>
+
+    <div class="catalog-cta reveal">
+      <a href="#address" class="btn-frame">Бронь стола</a>
+    </div>
+  </div>
+</section>
+
+<section class="velvet" id="follow">
+  <img class="bgimg" src="assets/img/other.png" alt="Ассорти джелато в креманках на бархате">
+  <div class="velvet-top">
+    <div class="wrap">
+      <img class="logo-big reveal" src="assets/img/text block7.svg" alt="Gelateria MonBlan">
+    </div>
+  </div>
+  <div class="velvet-bottom">
+    <div class="wrap">
+      <div class="vtext reveal">
+        <p>Выбирайте по&nbsp;настроению, возвращайтесь за&nbsp;любимым вкусом.<br>У&nbsp;нас всегда найдётся джелато, к&nbsp;которому захочется вернуться.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="reviews">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2>Отзывы наших гостей</h2>
+      </div>
+    </div>
+    <div class="reviews-grid">
+      <div class="reviews-left">
+        <div class="reviews-list" id="reviewsList">
+          <button class="review-tab active" type="button" data-index="0">
+            <span class="rt-num">01</span><span class="rt-title">Место сквозь года</span>
+          </button>
+          <button class="review-tab" type="button" data-index="1">
+            <span class="rt-num">02</span><span class="rt-title">Начало нашей истории любви</span>
+          </button>
+          <button class="review-tab" type="button" data-index="2">
+            <span class="rt-num">03</span><span class="rt-title">Из бизнеса в дружбу</span>
+          </button>
+        </div>
+        <div class="review-body reveal">
+          <p id="reviewText">Помню, как пять лет назад мы, еще студентками, забежали сюда спрятаться от ливня и случайно открыли для себя лучшее джелато в городе. С тех пор это наше место силы. Меняются работы, парни и прически, но наша традиция неизменна, каждые выходные мы встречаемся в MonBlan, берем по креманке фирменного мороженого и часами болтаем обо всем на свете. Атмосфера старой Европы, эстетика в каждой детали и вкус, который возвращает в самые теплые моменты жизни. Любим всем сердцем!</p>
+          <div class="review-meta">
+            <span class="review-date" id="reviewDate">18.07.2026</span>
+            <span class="review-authors" id="reviewAuthors">Адель и Виктория</span>
+          </div>
+        </div>
+      </div>
+      <div class="reviews-video reveal-scale">
+        <video id="reviewVideo" autoplay muted loop playsinline>
+          <source src="assets/video/scene5.1.mp4" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section orbit-section" id="orbit-ice">
+  <div class="wrap">
+    <div class="orbit-stage reveal-scale" id="orbitStage"></div>
+  </div>
+</section>
+
+<section class="section" id="address">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <h2>Адрес</h2>
+      </div>
+    </div>
+    <div class="addr">
+      <div class="addr-simple reveal">
+        <p><b>Санкт-Петербург</b>, ул. Пестеля 13–15</p>
+        <p>Для бронирования стола: <a href="tel:+78123227722">+7 812 322 77 22</a></p>
+      </div>
+      <div class="insta-card reveal-scale">
+        <p class="insta-handle">@monblan_gelateria</p>
+        <picture>
+          <source media="(max-width:1100px)" srcset="assets/img/Group 25.2.png">
+          <img src="assets/img/Group 25.png" alt="Gelateria MonBlan в Instagram">
+        </picture>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing-video reveal-scale">
+  <video autoplay muted loop playsinline poster="assets/img/other.png">
+    <source src="assets/video/scene4.mp4" type="video/mp4">
+  </video>
+</section>
+
+<footer>
+  <img class="foot-bgimg" src="assets/img/background.png" alt="">
+  <div class="wrap foot-grid">
+    <a href="#top" class="foot-logo">Gelateria<br>MonBlan</a>
+    <div class="foot-row">
+      <div class="foot-info">
+        <span>Gelato premium</span>
+        <a href="tel:+78123227722">+7 812 322 77 22</a>
+      </div>
+      <nav class="foot-nav">
+        <a href="#flavors">Вкусы месяца</a>
+        <a href="#assortment">Каталог</a>
+        <a href="#about">История</a>
+        <a href="#technology">Технология</a>
+        <a href="#address">Контакты</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalCard">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="fm-brand" id="modalBrand"></div>
+    <div class="fm-grid">
+      <div class="fm-photo"><img id="modalImg" src="" alt=""></div>
+      <div class="fm-info">
+        <h3 id="modalTitle"></h3>
+        <p id="modalDesc"></p>
+        <div class="fm-kbju" id="modalKbjuWrap">
+          <div class="fm-kbju-label">КБЖУ на 100г</div>
+          <div class="fm-kbju-lines" id="modalKbju"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fm-nav" id="modalNav">
+      <button type="button" id="modalPrev"><svg width="31" height="17" viewBox="0 0 31 17" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#navL)"><path d="M24.2134 10.1013C24.4322 10.1103 24.6421 10.0144 24.7968 9.82956C24.9515 9.64498 25.0385 9.38663 25.0385 9.11637C25.0385 8.84611 24.9515 8.58767 24.7968 8.40309C24.6421 8.21822 24.4322 8.12239 24.2134 8.13145C23.8148 8.1478 23.4095 8.16425 23.0035 8.18069C19.3738 8.32843 15.7363 8.47617 12.1066 8.62391C8.47464 8.77165 4.84263 8.91939 1.21063 9.06713C0.807086 9.08348 0.403539 9.09992 0 9.11637C0.403539 9.13272 0.807086 9.14917 1.21063 9.16562C4.84263 9.31336 8.47464 9.4611 12.1066 9.60883C15.7363 9.75657 19.3738 9.90431 23.0035 10.0521C23.4095 10.0684 23.8148 10.0848 24.2134 10.1013Z" fill="currentColor"/><path d="M0 9.11621C0.185238 9.21361 0.370456 9.311 0.555675 9.4084C3.88951 11.1617 7.22334 12.9149 10.5572 14.6683C10.7424 14.7657 10.9276 14.8631 11.1128 14.9605C11.2242 15.0191 11.3615 15.042 11.4963 15.0224C11.6309 15.0028 11.752 14.9423 11.8311 14.8559C11.9102 14.7695 11.9404 14.665 11.9135 14.567C11.8865 14.4689 11.8046 14.3855 11.6874 14.3332C11.4927 14.2463 11.2978 14.1594 11.1031 14.0724C7.59688 12.5073 4.09068 10.9421 0.58437 9.37704C0.389621 9.29012 0.194872 9.20313 0 9.11621Z" fill="currentColor"/><path d="M0 9.11621C0.185237 9.01881 0.370456 8.92142 0.555674 8.82402C3.88951 7.07076 7.22334 5.31749 10.5572 3.56415C10.7424 3.46675 10.9276 3.36936 11.1128 3.27196C11.2242 3.21331 11.3615 3.1904 11.4963 3.21007C11.6309 3.2296 11.752 3.29013 11.8311 3.37652C11.9102 3.46291 11.9404 3.56746 11.9135 3.66546C11.8865 3.76354 11.8046 3.84691 11.6874 3.89923C11.4927 3.98614 11.2978 4.07306 11.1031 4.16005C7.59688 5.72516 4.09068 7.29027 0.584369 8.85538C0.38962 8.9423 0.194871 9.02929 0 9.11621Z" fill="currentColor"/></g><defs><clipPath id="navL"><rect width="17" height="31" fill="white" transform="translate(31) rotate(90)"/></clipPath></defs></svg> предыдущий вкус</button>
+      <button type="button" id="modalNext">следующий вкус <svg width="31" height="17" viewBox="0 0 31 17" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#navR)"><path d="M6.78651 6.8987C6.56768 6.88974 6.35782 6.98557 6.20309 7.17044C6.04835 7.35502 5.96143 7.61337 5.96143 7.88363C5.96143 8.15389 6.04835 8.41234 6.20309 8.59691C6.35782 8.78178 6.56768 8.87761 6.78651 8.86855C7.18509 8.8522 7.59039 8.83575 7.99636 8.81931C11.6261 8.67157 15.2635 8.52383 18.8932 8.37609C22.5252 8.22835 26.1572 8.08061 29.7893 7.93287C30.1928 7.91652 30.5963 7.90008 30.9999 7.88363C30.5963 7.86728 30.1928 7.85083 29.7893 7.83438C26.1572 7.68664 22.5252 7.5389 18.8932 7.39117C15.2635 7.24343 11.6261 7.09569 7.99636 6.94795C7.5904 6.9316 7.18509 6.91515 6.78651 6.8987Z" fill="currentColor"/><path d="M31 7.88379C30.8148 7.78639 30.6295 7.689 30.4443 7.5916C27.1105 5.83834 23.7767 4.08507 20.4428 2.33173C20.2576 2.23433 20.0724 2.13694 19.8872 2.03954C19.7758 1.98089 19.6385 1.95798 19.5037 1.97765C19.3691 1.99717 19.248 2.05771 19.1689 2.1441C19.0898 2.23049 19.0596 2.33504 19.0865 2.43304C19.1135 2.53112 19.1954 2.61449 19.3126 2.66681C19.5073 2.75372 19.7022 2.84064 19.8969 2.92763C23.4031 4.49274 26.9093 6.05785 30.4156 7.62296C30.6104 7.70988 30.8051 7.79687 31 7.88379Z" fill="currentColor"/><path d="M31 7.88379C30.8148 7.98118 30.6295 8.07858 30.4443 8.17598C27.1105 9.92924 23.7767 11.6825 20.4428 13.4359C20.2576 13.5332 20.0724 13.6306 19.8872 13.728C19.7758 13.7867 19.6385 13.8096 19.5037 13.7899C19.3691 13.7704 19.248 13.7099 19.1689 13.6235C19.0898 13.5371 19.0596 13.4325 19.0865 13.3345C19.1135 13.2365 19.1954 13.1531 19.3126 13.1008C19.5073 13.0139 19.7022 12.9269 19.8969 12.8399C23.4031 11.2748 26.9093 9.70973 30.4156 8.14462C30.6104 8.0577 30.8051 7.97071 31 7.88379Z" fill="currentColor"/></g><defs><clipPath id="navR"><rect width="17" height="31" fill="white" transform="translate(1.00156e-06 17) rotate(-90)"/></clipPath></defs></svg></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// header solid on scroll
+const header = document.getElementById('siteHeader');
+const hero = document.querySelector('.hero');
+window.addEventListener('scroll', ()=>{
+  header.classList.toggle('solid', window.scrollY > 60);
+});
+
+// nav overlay toggle
+const menuToggle = document.getElementById('menuToggle');
+const navOverlay = document.getElementById('navOverlay');
+function closeNav(){menuToggle.classList.remove('open');navOverlay.classList.remove('open');header.classList.remove('on-dark');}
+menuToggle.addEventListener('click', ()=>{
+  const willOpen = !menuToggle.classList.contains('open');
+  menuToggle.classList.toggle('open');
+  navOverlay.classList.toggle('open');
+  header.classList.toggle('on-dark', willOpen);
+});
+document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click', closeNav));
+
+// ---- боковое меню: связь пунктов меню с лентой визуального контента ----
+(function(){
+  var DEBUG_NAV = /[?&]nav-debug=1/.test(location.search);
+
+  var menuItems = [
+    { id:'catalog',    label:'КАТАЛОГ' },
+    { id:'history',    label:'ИСТОРИЯ' },
+    { id:'reviews',    label:'ОТЗЫВЫ' },
+    { id:'contacts',   label:'КОНТАКТЫ' },
+    { id:'flavors',    label:'ВКУСЫ МЕСЯЦА' },
+    { id:'production', label:'ПРОИЗВОДСТВО' }
+  ];
+
+  var navList = document.getElementById('navList');
+  var viewport = document.getElementById('navContentViewport');
+  var track = document.getElementById('navContentTrack');
+  var navBox = document.getElementById('navBox');
+  if (!navList || !viewport || !track) return;
+
+  var linkEls = {};
+  menuItems.forEach(function(item){
+    linkEls[item.id] = navList.querySelector('.nav-link[data-target="' + item.id + '"]');
+  });
+
+  var order = menuItems.map(function(it){ return it.id; }); // порядок = порядок пунктов меню
+  var N = order.length;                                     // 6 уникальных превью
+  var activeId = order[0];
+  var hoverTimer = null;
+  var HOVER_INTENT_DELAY = 100; // 80-120ms по ТЗ
+
+  // ---- лента-круговорот -------------------------------------------------------
+  // В DOM 6 реальных превью. Достраиваем клоны: по полному набору с каждой
+  // стороны (aria-hidden). Прокрутка становится бесконечной в обе стороны, а
+  // «кратчайший путь» до пункта считается по кольцу: вкусы месяца → производство
+  // листает вниз на 1 шаг, производство → каталог — тоже вниз на 1 шаг через стык.
+  // Уникальных изображений по-прежнему 6.
+  var realBlocks = Array.prototype.slice.call(track.querySelectorAll('.nav-content-block'));
+  var leadFrag = document.createDocumentFragment();
+  var tailFrag = document.createDocumentFragment();
+  for (var ci = 0; ci < N; ci++){
+    var lc = realBlocks[ci].cloneNode(true);
+    lc.setAttribute('aria-hidden', 'true'); lc.classList.add('is-clone');
+    leadFrag.appendChild(lc);
+    var tc = realBlocks[ci].cloneNode(true);
+    tc.setAttribute('aria-hidden', 'true'); tc.classList.add('is-clone');
+    tailFrag.appendChild(tc);
+  }
+  track.insertBefore(leadFrag, realBlocks[0]); // клоны 0..N-1 перед оригиналом
+  track.appendChild(tailFrag);                 // клоны 0..N-1 после оригинала
+
+  var vIndex = 0; // виртуальная позиция активного превью; между переходами — 0..N-1
+  function realIndex(v){ return ((v % N) + N) % N; }
+
+  var geom = { H:0, bh:0, base:0, step:0, focus:0 };
+  function measure(){
+    var vpTop = viewport.getBoundingClientRect().top;
+    geom.H    = viewport.clientHeight;
+    geom.bh   = realBlocks[0].offsetHeight;
+    geom.base = realBlocks[0].offsetTop;                       // сдвиг из-за ведущих клонов
+    geom.step = realBlocks[1].offsetTop - realBlocks[0].offsetTop; // шаг одинаков для всех
+    // фокус — вертикальный центр рамки .nav-box: активное превью встаёт ровно
+    // по центру правого края прямоугольника
+    if (navBox){
+      var r = navBox.getBoundingClientRect();
+      geom.focus = (r.top + r.height / 2) - vpTop;
+    } else {
+      geom.focus = geom.H / 2;
+    }
+    alignBottomTag();
+  }
+  function yFor(v){
+    return Math.round(geom.focus - geom.bh / 2 - (geom.base + v * geom.step));
+  }
+
+  // «Кофейня» (нижняя вертикальная подпись) поднимается на уровень последнего
+  // пункта меню «Производство»: окончание слова (после rotate(-90deg) это верхний
+  // край бокса) выравнивается по нижнему краю слова «Производство».
+  var tagsEl    = navBox ? navBox.querySelector('.nav-tags') : null;
+  var bottomTag = navBox ? navBox.querySelector('.nav-tag-bottom') : null;
+  var lastLink  = linkEls[order[N - 1]]; // «Производство»
+  function alignBottomTag(){
+    if (!tagsEl || !bottomTag || !lastLink) return;
+    if (window.matchMedia('(max-width:900px)').matches){ bottomTag.style.top = ''; return; }
+    var tagsRect = tagsEl.getBoundingClientRect();
+    var linkRect = lastLink.getBoundingClientRect();
+    var tagRect  = bottomTag.getBoundingClientRect();      // высота = длина повёрнутого слова
+    var endEdge  = linkRect.bottom - tagsRect.top;         // низ «Производство» в координатах .nav-tags
+    bottomTag.style.top = (endEdge + tagRect.height / 2) + 'px'; // translate(-50%,-50%) центрирует бокс на якоре
+  }
+
+  var TRANS = 'transform .55s var(--ease)';
+  function setY(v, animate){
+    track.style.transition = animate ? TRANS : 'none';
+    track.style.transform  = 'translate3d(0,' + yFor(v) + 'px,0)';
+    if (!animate){ void track.offsetWidth; track.style.transition = TRANS; } // reflow → снап без анимации
+  }
+
+  // невидимый возврат ленты в канонический диапазон 0..N-1 (клоны идентичны оригиналам)
+  function normalizeNow(){
+    var canon = realIndex(vIndex);
+    if (canon !== vIndex){ vIndex = canon; setY(vIndex, false); }
+  }
+
+  var debugHud = null, debugLine = null;
+  if (DEBUG_NAV){
+    debugHud = document.createElement('div');
+    debugHud.className = 'nav-debug-hud';
+    viewport.appendChild(debugHud);
+    debugLine = document.createElement('div');
+    debugLine.className = 'nav-debug-line';
+    viewport.appendChild(debugLine);
+  }
+
+  function paintActive(id){
+    Array.prototype.forEach.call(track.querySelectorAll('.nav-content-block'), function(b){
+      b.classList.toggle('active', b.getAttribute('data-id') === id);
+    });
+    menuItems.forEach(function(item){
+      if (linkEls[item.id]) linkEls[item.id].classList.toggle('active', item.id === id);
+    });
+  }
+
+  function applyActive(id){
+    activeId = id;
+    paintActive(id);
+
+    var target = order.indexOf(id);
+    if (target < 0) return;
+
+    normalizeNow();                          // лента в каноническом диапазоне 0..N-1
+    var d = ((target - vIndex) % N + N) % N; // 0..N-1 вперёд
+    if (d > N / 2) d -= N;                   // кратчайшее направление по кольцу (±)
+    vIndex += d;
+    setY(vIndex, true);
+
+    if (DEBUG_NAV && debugHud){
+      debugHud.textContent =
+        'activeId: ' + id + '\n' +
+        'vIndex: ' + vIndex + '  real: ' + realIndex(vIndex) + '  Δ: ' + d;
+      debugLine.style.top = geom.focus + 'px'; // линия центра рамки
+    }
+  }
+
+  // после того как переход отыгран — невидимо возвращаем ленту в канон
+  track.addEventListener('transitionend', function(e){
+    if (e.propertyName === 'transform') normalizeNow();
+  });
+
+  function scheduleActive(id){
+    if (id === activeId) return;
+    clearTimeout(hoverTimer); // отменяем предыдущий отложенный переход — очереди не будет
+    hoverTimer = setTimeout(function(){ applyActive(id); }, HOVER_INTENT_DELAY);
+  }
+
+  menuItems.forEach(function(item){
+    var link = linkEls[item.id];
+    if (!link) return;
+    link.addEventListener('pointerenter', function(){ scheduleActive(item.id); });
+  });
+  // курсор ушёл с меню целиком — активный пункт остаётся как есть (по ТЗ, п.8)
+
+  measure();
+  vIndex = 0;
+  setY(0, false);        // начальное состояние — без прыжка
+  paintActive(activeId);
+  // шрифты подгружаются асинхронно — пересчёт после их загрузки (ширина подписи «Кофейня»)
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ measure(); setY(vIndex, false); });
+  }
+
+  // при ресайзе размеры вьюпорта/блоков меняются — переустанавливаем позицию без анимации
+  var resizeRaf = null;
+  window.addEventListener('resize', function(){
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(function(){ measure(); setY(vIndex, false); });
+  });
+  // меню открывается по clip-path (не display:none); при открытии пересчитываем и центрируем
+  if (typeof menuToggle !== 'undefined' && menuToggle){
+    menuToggle.addEventListener('click', function(){
+      requestAnimationFrame(function(){ measure(); setY(vIndex, false); });
+    });
+  }
+})();
+
+// reviews tabs
+const reviewsData = [
+  {
+    text:'Помню, как пять лет назад мы, еще студентками, забежали сюда спрятаться от ливня и случайно открыли для себя лучшее джелато в городе. С тех пор это наше место силы. Меняются работы, парни и прически, но наша традиция неизменна, каждые выходные мы встречаемся в MonBlan, берем по креманке фирменного мороженого и часами болтаем обо всем на свете. Атмосфера старой Европы, эстетика в каждой детали и вкус, который возвращает в самые теплые моменты жизни. Любим всем сердцем!',
+    date:'18.07.2026', authors:'Адель и Виктория', video:'assets/video/scene5.1.mp4'
+  },
+  {
+    text:'Место, где началась наша семья. Именно здесь на первом свидании мы жутко волновались, пили остывающий раф и часами смотрели друг на друга. С тех пор это наше любимое место для свиданий, когда хочется сбежать от суеты, взять по креманке любимого джелато с хрустящей вафлей и просто побыть вдвоем. Обожаем MonBlan за эстетику, уютные мраморные столики и за то, что здесь всегда пахнет счастьем и хорошим кофе!',
+    date:'05.05.2026', authors:'Анастасия и Дмитрий', video:'assets/video/scene6.mp4'
+  },
+  {
+    text:'В модельном бизнесе сложно найти искреннюю дружбу, но MonBlan сотворил чудо. Два года назад мы, уставшие после тяжелого кастинга, забежали сюда за кофе, чтобы согреться и отойти после утомительной съемки. Именно здесь, за долгими разговорами о планах и жизни, мы стали настоящими подругами. Это место притягивает творческих и красивых людей. Атмосфера здесь невероятно кинематографичная и вдохновляющая.',
+    date:'30.08.2026', authors:'Кира и Мирослава', video:'assets/video/scene7.mp4'
+  }
+];
+const reviewTabs = document.querySelectorAll('.review-tab');
+const reviewVideo = document.getElementById('reviewVideo');
+const reviewVideoSource = reviewVideo ? reviewVideo.querySelector('source') : null;
+reviewTabs.forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    const i = Number(tab.dataset.index);
+    const data = reviewsData[i];
+    if(!data) return;
+    reviewTabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('reviewText').textContent = data.text;
+    document.getElementById('reviewDate').textContent = data.date;
+    document.getElementById('reviewAuthors').textContent = data.authors;
+    if(reviewVideo && reviewVideoSource){
+      reviewVideoSource.src = data.video;
+      reviewVideo.load();
+      reviewVideo.play().catch(()=>{});
+    }
+  });
+});
+
+// reveal on scroll
+const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+},{threshold:.15});
+revealEls.forEach(el=>io.observe(el));
+
+// flavor carousel arrows
+const track = document.getElementById('monthTrack');
+if(track){
+  const originalCards = Array.from(track.children);
+  const setCount = originalCards.length;
+  // duplicate the set twice more so we can loop seamlessly in both directions
+  originalCards.forEach(c=>track.appendChild(c.cloneNode(true)));
+  originalCards.forEach(c=>track.appendChild(c.cloneNode(true)));
+
+  const cardStep = originalCards[0].getBoundingClientRect().width + 22; // width + gap
+  // start in the middle copy so we can scroll both ways
+  track.scrollLeft = cardStep * setCount;
+
+  function normalizeLoop(){
+    const setWidth = cardStep * setCount;
+    if(track.scrollLeft <= setWidth * 0.3){
+      track.scrollLeft += setWidth;
+    } else if(track.scrollLeft >= setWidth * 1.7){
+      track.scrollLeft -= setWidth;
+    }
+  }
+  let scrollTimer;
+  track.addEventListener('scroll', ()=>{
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(normalizeLoop, 120);
+  });
+
+  document.getElementById('nextFlavor').addEventListener('click', ()=>track.scrollBy({left:cardStep,behavior:'smooth'}));
+  document.getElementById('prevFlavor').addEventListener('click', ()=>track.scrollBy({left:-cardStep,behavior:'smooth'}));
+}
+
+// assortment: custom dropdowns for filter + sort, with real filtering/sorting
+const scoops = Array.from(document.querySelectorAll('.scoop'));
+
+function setupDropdown(triggerId, dropdownId, valueId, onSelect){
+  const trigger = document.getElementById(triggerId);
+  const dropdown = document.getElementById(dropdownId);
+  const valueEl = document.getElementById(valueId);
+  if(!trigger || !dropdown) return;
+
+  function close(){
+    dropdown.classList.remove('open');
+    trigger.classList.remove('open');
+    trigger.setAttribute('aria-expanded','false');
+  }
+  function toggle(){
+    const willOpen = !dropdown.classList.contains('open');
+    document.querySelectorAll('.ac-dropdown.open').forEach(d=>{
+      d.classList.remove('open');
+      d.previousElementSibling && d.previousElementSibling.classList.remove('open');
+    });
+    if(willOpen){
+      dropdown.classList.add('open');
+      trigger.classList.add('open');
+      trigger.setAttribute('aria-expanded','true');
+    }
+  }
+  trigger.addEventListener('click', (e)=>{ e.stopPropagation(); toggle(); });
+  dropdown.querySelectorAll('li').forEach(li=>{
+    li.addEventListener('click', ()=>{
+      dropdown.querySelectorAll('li').forEach(o=>o.setAttribute('aria-selected','false'));
+      li.setAttribute('aria-selected','true');
+      valueEl.textContent = li.textContent;
+      close();
+      onSelect(li.dataset.value);
+    });
+  });
+  document.addEventListener('click', (e)=>{
+    if(!dropdown.contains(e.target) && e.target!==trigger && !trigger.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
+}
+
+let currentFilter = 'all';
+let currentSort = 'default';
+
+function applyFilterAndSort(){
+  scoops.forEach(s=>{
+    s.classList.toggle('hide', currentFilter!=='all' && s.dataset.cat!==currentFilter);
+  });
+  if(currentSort==='default'){
+    scoops.forEach(s=>{ s.style.order=''; });
+  } else {
+    const sorted = [...scoops].sort((a,b)=>{
+      const an=a.dataset.name.toLowerCase(), bn=b.dataset.name.toLowerCase();
+      return currentSort==='az' ? an.localeCompare(bn) : bn.localeCompare(an);
+    });
+    sorted.forEach((s,i)=>{ s.style.order=i; });
+  }
+}
+
+setupDropdown('filterTrigger','filterDropdown','filterValue', (v)=>{
+  currentFilter = v;
+  applyFilterAndSort();
+});
+setupDropdown('sortTrigger','sortDropdown','sortValue', (v)=>{
+  currentSort = v;
+  applyFilterAndSort();
+});
+
+// modal for flavor cards + scoops
+const flavorInfo = {
+  'vanila':{ru:'Классическая ваниль', desc:'Абсолютная классика в ее самом роскошном исполнении. Нежнейшее сливочное джелато с добавлением натуральных семян мадагаскарской ванили. Обладает глубоким, обволакивающим ароматом и чистым, благородным вкусом, который идеально сбалансирован и оставляет приятное бархатистое послевкусие.', kbju:{cal:210,protein:3.8,fat:11.0,carbs:24.0}},
+  'pistachio':{ru:'Сицилийская фисташка', desc:'Настоящий аристократ в мире джелато. Насыщенный сливочный вкус с добавлением 100% натуральной пасты из обжаренных сицилийских фисташек. Это мороженое покоряет своим благородным, слегка солоноватым ореховым оттенком и густой, шелковистой текстурой.', kbju:{cal:245,protein:5.2,fat:14.5,carbs:23.5}},
+  'coconut':{ru:'Кокосовый рай', desc:'Тропическое блаженство в каждой ложке. Густая сливочная основа гармонично сочетается с натуральным кокосовым молоком и тончайшей стружкой. Джелато обладает мягким, умеренно сладким вкусом и дарит ощущение свежести океанского бриза.', kbju:{cal:230,protein:3.5,fat:13.8,carbs:22.8}},
+  'matcha':{ru:'Японская матча', desc:'Утонченный вкус для истинных гурманов. Сливочная сладость нежно переплетается с благородной терпкостью и легкой горчинкой оригинального японского зеленого чая матча высшего сорта. Освежающее, глубокое джелато с незабываемым травяным послевкусием.', kbju:{cal:205,protein:4.1,fat:10.5,carbs:23.5}},
+  'salted caramel':{ru:'Соленая карамель', desc:'Игра контрастов, перед которой невозможно устоять. Тягучая домашняя карамель, сваренная по традиционному рецепту, утопает в нежных сливках. Крупинки премиальной морской соли выгодно оттеняют сладость, делая вкус многогранным и ярким.', kbju:{cal:235,protein:3.6,fat:11.5,carbs:29.0}},
+  'cheese':{ru:'Благородный сыр', desc:'Гастрономический восторг для ценителей необычных сочетаний. Изысканное сливочное джелато с добавлением мягкого кремового сыра. Обладает нежной текстурой, легкой пикантной солоноватостью и глубоким сырным ароматом, который раскрывается с каждым кусочком.', kbju:{cal:240,protein:5.0,fat:15.0,carbs:21.0}},
+  'chocolate':{ru:'Классический шоколад', desc:'Мечта истинного шокоголика. Плотное, бархатистое джелато, приготовленное на основе отборного темного бельгийского шоколада с высоким содержанием какао. Насыщенный, глубокий вкус с едва заметной горчинкой и текстура, которая тает во рту.', kbju:{cal:230,protein:4.5,fat:12.5,carbs:25.0}},
+  'three chocolates':{ru:'Три шоколада', desc:'Роскошное трио в одном десерте. Идеальный союз трех видов бельгийского шоколада: глубокого темного, нежного молочного и утонченного белого. Сложный, богатый вкус с красивыми мраморными переливами текстуры дарит настоящее кондитерское наслаждение.', kbju:{cal:250,protein:4.8,fat:14.0,carbs:26.0}},
+  "bird's milk":{ru:'Птичье молоко', desc:'Вкус любимого десерта из детства, переосмысленный в формате премиального джелато. Нежнейшая, воздушная сливочно-суфлейная основа с тонкими вкраплениями хрустящей глазури из натурального темного шоколада. Легкое, тающее и невероятно уютное.', kbju:{cal:225,protein:3.9,fat:12.0,carbs:25.5}},
+  'tiramisu':{ru:'Итальянский тирамису', desc:'Маленькое путешествие в Рим. Аутентичное итальянское джелато на основе нежного сыра маскарпоне, пропитанное кофейным экстрактом и дополненное кусочками мягкого бисквита савоярди. Сверху десерт деликатно припудрен ароматным какао.', kbju:{cal:240,protein:4.3,fat:13.0,carbs:26.5}},
+  'lime-strawberry-basil':{ru:'Лайм-Клубника-Базилик', desc:'Взрывная летняя свежесть в сливочном исполнении. Сочная спелая клубника и бодрящая кислинка лайма гармонично дополнены пряными нотками свежего зеленого базилика. Легкое, яркое джелато с идеальным балансом сладких, кислых и травяных оттенков.', kbju:{cal:185,protein:3.2,fat:8.5,carbs:24.0}},
+  'kiwi-banana':{ru:'Киви-Банан', desc:'Яркий тропический дуэт. Мягкая, обволакивающая сладость спелого банана идеально контрастирует с легкой освежающей кислинкой сочного киви. Нежная сливочная текстура делает это фруктовое сочетание невероятно мягким и бархатистым.', kbju:{cal:190,protein:3.3,fat:8.8,carbs:24.5}},
+  'strawberry':{ru:'Классическая клубника', desc:'Настоящий вкус залитого солнцем лета. Сливочное джелато с добавлением пюре из спелой садовой клубники. Обладает нежной текстурой, мягким ягодным ароматом и деликатной кислинкой, которая идеально сбалансирована сладостью натуральных сливок.', kbju:{cal:190,protein:3.3,fat:9.0,carbs:24.0}},
+  'wild berries':{ru:'Лесные ягоды', desc:'Яркий и насыщенный микс, собравший в себе всю магию лесных полян. В основе этого джелато — сочное пюре из спелой малины, ежевики, черники и земляники. Тонкий сливочный вкус уступает место мощному, слегка терпкому ягодному взрыву с приятной освежающей кислинкой.', kbju:{cal:185,protein:3.2,fat:8.5,carbs:24.2}},
+  'blueberry':{ru:'Спелая черника', desc:'Изысканное джелато глубокого лавандового оттенка. Приготовлено на основе спелой лесной черники и фермерских сливок. Вкус раскрывается мягкими, бархатистыми нотами сладкой ягоды, оставляя долгое и невероятно нежное послевкусие. По-настоящему уютный и благородный десерт.', kbju:{cal:195,protein:3.4,fat:9.2,carbs:24.5}},
+  'lemon':{ru:'Бодрящий лимон', desc:'Максимальный заряд свежести в формате ультралегкого сорбета. Приготовлен из сока и цедры спелых сицилийских лимонов. Обладает дерзким, пронзительным цитрусовым вкусом с выраженной кислинкой, которая мгновенно тонизирует и оставляет приятный прохладный шлейф. Идеальный выбор для жаркого дня.', kbju:{cal:110,protein:0.2,fat:0.1,carbs:27.0}},
+  'grapefruit-tangerine':{ru:'Грейпфрут-Мандарин', desc:'Изысканный цитрусовый дуэт с ярким характером. Сочная сладость спелого новогоднего мандарина идеально уравновешивает благородную горчинку и легкую терпкость красного грейпфрута. Этот легкий сорбет дарит сложный, многогранный вкус и абсолютную свежесть.', kbju:{cal:115,protein:0.4,fat:0.1,carbs:28.0}},
+  'pineapple-coconut':{ru:'Ананас-Кокос / Пина Колада', desc:'Легендарный тропический коктейль в новом прочтении. Экзотическая кислинка сочного спелого ананаса мягко переплетается с обволакивающими, бархатистыми нотами натурального кокосового молока. Легкое, освежающее джелато, переносящее на белоснежные океанские пляжи с первой ложки.', kbju:{cal:175,protein:2.1,fat:7.5,carbs:24.8}},
+  'nut':{ru:'Лесной орех / Фундук', desc:'Насыщенное, согревающее джелато для истинных ценителей. Приготовлено с добавлением пасты из отборного обжаренного фундука. Каждая ложка дарит плотный, глубокий вкус с выраженным ореховым ароматом и благородной сливочной сладостью. Настоящее воплощение осеннего уюта.', kbju:{cal:248,protein:5.5,fat:15.2,carbs:22.5}},
+  'mint-choco':{ru:'Мята-Шоколад', desc:'Идеальный союз ледяной свежести и шоколадной роскоши. Нежная сливочная основа с экстрактом натуральной перечной мяты приятно охлаждает, а вкрапления хрустящей крошки из горького бельгийского шоколада добавляют вкусу благородную глубину и приятную текстуру. Контраст, который влюбляет в себя сразу.', kbju:{cal:220,protein:4.0,fat:12.0,carbs:24.0}}
+};
+
+const modalBg = document.getElementById('modalBg');
+const modalCard = document.getElementById('modalCard');
+const modalImg = document.getElementById('modalImg');
+const modalBrand = document.getElementById('modalBrand');
+const modalTitle = document.getElementById('modalTitle');
+const modalDesc = document.getElementById('modalDesc');
+const modalKbjuWrap = document.getElementById('modalKbjuWrap');
+const modalKbju = document.getElementById('modalKbju');
+const modalNav = document.getElementById('modalNav');
+const modalPrev = document.getElementById('modalPrev');
+const modalNext = document.getElementById('modalNext');
+let currentScoopIndex = -1;
+
+function openModal(name, desc, img, fromCatalog){
+  const key = (name || '').toLowerCase().trim();
+  const info = flavorInfo[key];
+  modalImg.src = img; modalImg.alt = name;
+  modalBrand.textContent = name;
+  modalTitle.textContent = (info && info.ru) || name;
+  modalDesc.textContent = (info && info.desc) || desc || 'Джелато собственного приготовления по итальянской технологии, без искусственных красителей и ароматизаторов.';
+  if(info && info.kbju){
+    const k = info.kbju;
+    modalKbju.innerHTML = `Калории: ${k.cal} ккал<br>Белки: ${k.protein.toFixed(1)} г<br>Жиры: ${k.fat.toFixed(1)} г<br>Углеводы: ${k.carbs.toFixed(1)} г`;
+    modalKbjuWrap.classList.add('show');
+  } else {
+    modalKbjuWrap.classList.remove('show');
+  }
+  modalNav.classList.toggle('show', !!fromCatalog);
+  modalBg.classList.add('open');
+}
+document.getElementById('modalClose').addEventListener('click', ()=>modalBg.classList.remove('open'));
+modalBg.addEventListener('click', (e)=>{ if(e.target===modalBg) modalBg.classList.remove('open'); });
+
+document.querySelectorAll('.flavor-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    openModal(card.dataset.name, card.dataset.desc, card.dataset.img, false);
+  });
+});
+document.querySelectorAll('.scoop').forEach((card, i)=>{
+  card.addEventListener('click', ()=>{
+    currentScoopIndex = i;
+    openModal(card.dataset.name, null, card.dataset.img, true);
+  });
+});
+function openScoopByIndex(i){
+  const total = scoops.length;
+  currentScoopIndex = (i + total) % total;
+  const card = scoops[currentScoopIndex];
+  openModal(card.dataset.name, null, card.dataset.img, true);
+}
+modalPrev.addEventListener('click', ()=>{ if(currentScoopIndex>-1) openScoopByIndex(currentScoopIndex-1); });
+modalNext.addEventListener('click', ()=>{ if(currentScoopIndex>-1) openScoopByIndex(currentScoopIndex+1); });
+
+
+// smooth-scroll for internal anchors
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click', function(e){
+    const id = this.getAttribute('href');
+    if(id.length>1){
+      const target = document.querySelector(id);
+      if(target){
+        e.preventDefault();
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }
+  });
+});
+</script>
+
+<script>
+/* =========================================================================
+   ICE GALLERY — интерактивный лёд поверх джелато («Вкусы месяца»)
+   Независимая физическая система: 6 карточек, у каждой свой набор
+   ледяных кубиков (DOM-элементы), реагирующих на курсор отталкиванием
+   и возвращающихся к anchor-точкам через пружинную силу.
+   ========================================================================= */
+(function(){
+  'use strict';
+
+  // ---- 25. DEBUG MODE ---------------------------------------------------
+  // Переключи вручную, либо добавь ?ice-debug=1 к адресу страницы,
+  // либо нажми клавишу "D" прямо на странице.
+  var DEBUG_ICE = /[?&]ice-debug=1/.test(location.search);
+
+  // ---- 38. ЦЕНТРАЛИЗОВАННЫЕ НАСТРОЙКИ ФИЗИКИ -----------------------------
+  // interactionRadiusPct / maxDisplacementPct заданы в % от ширины карточки
+  // (а не в px) — так зона реакции остаётся пропорциональной размеру шарика
+  // джелато независимо от размера экрана (на широких мониторах карточки крупнее).
+  var icePhysicsConfig = {
+    interactionRadiusPct: 32, // ~размер одного шарика джелато
+    interactionStrength: 46,  // сила отталкивания
+    friction: 0.90,           // затухание скорости, пока курсор рядом (мягкий, инерционный толчок)
+    returnFriction: 0.78,     // затухание скорости на возврате — сильнее, чтобы не было пружинного перелёта
+    returnStrength: 0.06,     // сила пружины возврата к anchor
+    maxDisplacementPct: 17,   // макс. смещение льдинки от anchor
+    rotationStrength: 0.9     // множитель для микровращения при движении
+  };
+  // ЭКСПЕРИМЕНТ: более "твёрдое" движение — как будто лёд бросили на
+  // жёсткую поверхность (жёсткая пружина, сильное затухание, резкий импульс).
+  // Пока применяется только к одной карточке (см. FLAVORS ниже, поле physics).
+  var icePhysicsRigid = {
+    interactionRadiusPct: 32,
+    interactionStrength: 95,  // резче "толчок" при касании
+    friction: 0.72,           // сильнее гасит скорость — меньше "гуляния"
+    returnFriction: 0.65,
+    returnStrength: 0.32,     // жёсткая пружина — быстрый чёткий возврат
+    maxDisplacementPct: 12.5,
+    rotationStrength: 0.3     // меньше болтанки при развороте
+  };
+
+  // ---- 26/27/28. ИСХОДНЫЕ ЛЬДИНКИ (26 уникальных изображений) -----------
+  var ICE_BASE = 'assets/img/карусель/льдинки/';
+  // основной набор (ice, ice2, ice3, ice4, ice5, ice6) — должен встречаться чаще остальных
+  var ICE_IMAGES_PRIMARY = ['ice.PNG','ice2.PNG','Ice3.PNG','ice4.PNG','ice5.PNG','ice6.PNG'];
+  // дополнительные вариации — встречаются реже, для разнообразия
+  var ICE_IMAGES_OTHER = [
+    'Ice03.png','Ice03_2.png',
+    'ice01.png','ice01_2.png','ice01_3.png','ice01_4.png',
+    'ice02.png','ice02_3.png','ice02_4.png',
+    'ice04.png','ice04_2.png','ice04_3.png','ice04_4.png',
+    'ice05.png','ice05_2.png','ice05_3.png',
+    'ice06.png','ice06_2.png','ice06_3.png','ice06_4.png'
+  ];
+  // взвешенный пул: каждая "основная" льдинка встречается в PRIMARY_WEIGHT раз чаще одной "дополнительной"
+  var PRIMARY_WEIGHT = 5;
+  var ICE_IMAGES = [];
+  ICE_IMAGES_PRIMARY.forEach(function(name){
+    for (var w=0; w<PRIMARY_WEIGHT; w++){ ICE_IMAGES.push(name); }
+  });
+  ICE_IMAGES = ICE_IMAGES.concat(ICE_IMAGES_OTHER);
+
+  // ---- 23. ШЕСТЬ ВКУСОВ ---------------------------------------------------
+  // iceArea — эллиптическая область в %, где может находиться лёд.
+  // anchors можно задать вручную (приоритет), иначе они генерируются
+  // автоматически по силуэту купола джелато (см. generateIceAnchors).
+  var FLAVORS = [
+    { id:'choco-cheese',   name:'choco-cheese',   desc:'Дуэт шоколадного и сырного мороженого',           image:'assets/img/карусель/1.png',   iceCount:36, seed:101, anchors:null,
+      iceArea:{ centerX:50, centerY:24, radiusX:40, radiusY:24 } },
+    { id:'lemon-fresh',    name:'lemon fresh',    desc:'Освежающий спелый лимон с ярким вкусом цедры',     image:'assets/img/карусель/2.png',   iceCount:36, seed:202, anchors:null,
+      iceArea:{ centerX:50, centerY:24, radiusX:40, radiusY:24 } },
+    { id:'pistachio',      name:'pistachio',      desc:'Насыщенный ореховый вкус из отборных фисташек',    image:'assets/img/карусель/3.PNG',   iceCount:36, seed:303, anchors:null,
+      iceArea:{ centerX:50, centerY:24, radiusX:40, radiusY:24 } },
+    { id:'watermelon',     name:'watermelon',     desc:'Сочный и яркий арбуз с освежающей сладостью',      image:'assets/img/карусель/4.png',   iceCount:36, seed:404, anchors:null,
+      iceArea:{ centerX:50, centerY:24, radiusX:40, radiusY:24 } },
+    { id:'creamy-caramel', name:'creamy caramel', desc:'Вкус бабушкиного топленого молока',                 image:'assets/img/карусель/5.png',   iceCount:36, seed:505, anchors:null,
+      iceArea:{ centerX:50, centerY:24, radiusX:40, radiusY:24 } },
+    { id:'wild-berries',   name:'wild berries',   desc:'Ягодный микс смородины, черники и голубики',        image:'assets/img/карусель/6.png',   iceCount:36, seed:606, anchors:null,
+      iceArea:{ centerX:50, centerY:24, radiusX:40, radiusY:24 } }
+  ];
+
+  // ---- seeded PRNG (стабильно между перезагрузками) ----------------------
+  function mulberry32(seed){
+    return function(){
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---- 4/5/6/27. ГЕНЕРАЦИЯ ANCHOR-ТОЧЕК ПО СИЛУЭТУ КУПОЛА ДЖЕЛАТО --------
+  // Профиль купола: [y% от карточки, полуширина% на этой высоте].
+  // Подобран по форме трёх шариков джелато в креманке (шире у края, уже к вершине).
+  var MOUND_PROFILE = [
+    [0,9],[4,17],[8,23],[12,28],[16,32],[20,35],[24,37],[28,39],[32,40],[36,40],[40,39],[44,38],[48,35]
+  ];
+  var ICE_CUBE_SIZE_PERCENT = 23; // держим в синхроне с .ice-cube{width:23%}
+  function widthAtY(y){
+    for (var i=0;i<MOUND_PROFILE.length-1;i++){
+      var a=MOUND_PROFILE[i], b=MOUND_PROFILE[i+1];
+      if (y>=a[0] && y<=b[0]){
+        var t=(y-a[0])/(b[0]-a[0]);
+        return a[1] + (b[1]-a[1])*t;
+      }
+    }
+    return MOUND_PROFILE[MOUND_PROFILE.length-1][1];
+  }
+  // Гарантирует отсутствие визуальных просветов: в каждом ряду минимум
+  // столько льдинок, чтобы соседние кубики перекрывались, а не просто
+  // соприкасались краями. Если этого требует больше точек, чем count —
+  // приоритет у полного покрытия (просветы хуже, чем пара лишних кубиков).
+  function generateIceAnchors(iceArea, count, rng){
+    var yTop = MOUND_PROFILE[0][0], yBottom = MOUND_PROFILE[MOUND_PROFILE.length-1][0];
+    var rows = Math.max(6, Math.round(Math.sqrt(count*1.7)));
+    var rowData = [];
+    for (var r=0; r<rows; r++){
+      var t = rows===1 ? 0.5 : r/(rows-1);
+      var y = yTop + (yBottom-yTop)*t;
+      rowData.push({ y:y, hw:widthAtY(y) });
+    }
+    var minGap = ICE_CUBE_SIZE_PERCENT * 0.7;
+    var counts = rowData.map(function(rd){
+      return Math.max(2, Math.ceil((2*rd.hw)/minGap) + 1);
+    });
+    var total = counts.reduce(function(a,b){return a+b;}, 0);
+    if (total < count){
+      var extra = count - total;
+      for (var i=0; i<extra; i++){ counts[i % counts.length]++; }
+    }
+    var anchors = [];
+    rowData.forEach(function(rd, r){
+      var rowCount = counts[r];
+      for (var i=0; i<rowCount; i++){
+        var xt = rowCount===1 ? 0.5 : i/(rowCount-1);
+        var x = iceArea.centerX + (xt*2-1) * rd.hw;
+        var yy = rd.y;
+        // 6. небольшие случайные вариации, чтобы не выглядело сеткой
+        x += (rng()-0.5) * 4.5;
+        yy += (rng()-0.5) * 3;
+        anchors.push({ x: x, y: yy });
+      }
+    });
+    return anchors;
+  }
+
+  // ---- reduced motion ------------------------------------------------
+  var REDUCE_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  // ---- сборка DOM для одной креманки --------------------------------
+  var allCubes = [];   // плоский список всех льдинок всех карточек (physics loop)
+  var allCards = [];   // состояние pointer per card
+
+  function buildCard(flavor){
+    var card = document.createElement('div');
+    card.className = 'ice-card reveal-scale';
+    card.dataset.flavor = flavor.id;
+
+    var media = document.createElement('div');
+    media.className = 'ice-card-media';
+
+    var img = document.createElement('img');
+    img.className = 'ice-gelato-img';
+    img.src = flavor.image;
+    img.alt = flavor.name + ' — джелато MonBlan';
+    img.loading = 'lazy';
+    media.appendChild(img);
+
+    var layer = document.createElement('div');
+    layer.className = 'ice-layer';
+    media.appendChild(layer);
+
+    card.appendChild(media);
+
+    var name = document.createElement('b');
+    name.className = 'ice-card-name';
+    name.textContent = flavor.name;
+    card.appendChild(name);
+
+    var desc = document.createElement('p');
+    desc.className = 'ice-card-desc';
+    desc.textContent = flavor.desc;
+    card.appendChild(desc);
+
+    // ---- состояние pointer для этой карточки ----
+    var cardState = {
+      layer: layer, media: media,
+      pointerActive: false, pointerX: 0, pointerY: 0,
+      rectW: 1, rectH: 1
+    };
+    allCards.push(cardState);
+
+    function updateRectFromEvent(e){
+      var rect = layer.getBoundingClientRect();
+      cardState.rectW = rect.width || 1;
+      cardState.rectH = rect.height || 1;
+      var clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      var clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      cardState.pointerX = clientX - rect.left;
+      cardState.pointerY = clientY - rect.top;
+    }
+
+    if (!REDUCE_MOTION){
+      layer.addEventListener('pointerenter', function(e){ cardState.pointerActive = true; updateRectFromEvent(e); });
+      layer.addEventListener('pointermove', function(e){ cardState.pointerActive = true; updateRectFromEvent(e); });
+      layer.addEventListener('pointerleave', function(){ cardState.pointerActive = false; });
+      layer.addEventListener('pointerdown', function(e){ cardState.pointerActive = true; updateRectFromEvent(e); });
+    }
+
+    // ---- per-card физика: свой конфиг (flavor.physics) или общий по умолчанию ----
+    var cfg = flavor.physics || icePhysicsConfig;
+    cardState.interactionRadiusPct = cfg.interactionRadiusPct;
+
+    // ---- 27/28. anchors + распределение исходных изображений льда ----
+    var rng = mulberry32(flavor.seed);
+    var anchors = (flavor.anchors && flavor.anchors.length >= flavor.iceCount)
+      ? flavor.anchors.slice(0, flavor.iceCount)
+      : generateIceAnchors(flavor.iceArea, flavor.iceCount, rng);
+
+    var debugDots = [];
+    var debugOverlay = null;
+    if (DEBUG_ICE){
+      debugOverlay = document.createElement('div');
+      debugOverlay.className = 'ice-debug';
+      var area = flavor.iceArea;
+      var areaEl = document.createElement('div');
+      areaEl.className = 'a-area';
+      areaEl.style.left = (area.centerX - area.radiusX) + '%';
+      areaEl.style.top = (area.centerY - area.radiusY) + '%';
+      areaEl.style.width = (area.radiusX*2) + '%';
+      areaEl.style.height = (area.radiusY*2) + '%';
+      debugOverlay.appendChild(areaEl);
+      var radiusEl = document.createElement('div');
+      radiusEl.className = 'a-radius';
+      radiusEl.style.display = 'none';
+      debugOverlay.appendChild(radiusEl);
+      var pointerEl = document.createElement('div');
+      pointerEl.className = 'a-pointer';
+      pointerEl.style.display = 'none';
+      debugOverlay.appendChild(pointerEl);
+      media.appendChild(debugOverlay);
+      cardState.debugRadiusEl = radiusEl;
+      cardState.debugPointerEl = pointerEl;
+    }
+
+    anchors.forEach(function(anchor, idx){
+      var cube = document.createElement('div');
+      cube.className = 'ice-cube';
+      cube.style.left = anchor.x + '%';
+      cube.style.top = anchor.y + '%';
+
+      var cubeImg = document.createElement('img');
+      cubeImg.src = ICE_BASE + ICE_IMAGES[Math.floor(rng()*ICE_IMAGES.length)];
+      cubeImg.alt = '';
+      cubeImg.setAttribute('aria-hidden','true');
+      cube.appendChild(cubeImg);
+      layer.appendChild(cube);
+
+      var scale = 0.75 + rng()*0.40;          // 8. 0.75–1.15
+      var baseRotation = (rng()*2-1) * 18;    // 9. -18..+18deg
+      var opacity = 0.65 + rng()*0.25;        // 10. 0.65–0.9
+      var zIndex = 1 + Math.floor(rng()*5);   // 22. 1–5
+      cube.style.opacity = opacity.toFixed(2);
+      cube.style.zIndex = zIndex;
+
+      var state = {
+        el: cube, card: cardState, cfg: cfg,
+        anchorXPct: anchor.x, anchorYPct: anchor.y,
+        dx: 0, dy: 0, vx: 0, vy: 0,
+        angle: 0, angularVelocity: 0,
+        baseRotation: baseRotation, scale: scale,
+        // 18. у каждой льдинки чуть свои параметры физики
+        mass: 0.85 + rng()*0.3,
+        friction: cfg.friction + (rng()-0.5)*0.03,
+        returnFriction: cfg.returnFriction + (rng()-0.5)*0.03,
+        returnStrength: cfg.returnStrength * (0.75 + rng()*0.5),
+        maxDisplacementPct: cfg.maxDisplacementPct * (0.85 + rng()*0.3)
+      };
+      allCubes.push(state);
+
+      if (DEBUG_ICE && debugOverlay){
+        var dot = document.createElement('div');
+        dot.className = 'a-dot';
+        dot.style.left = anchor.x + '%';
+        dot.style.top = anchor.y + '%';
+        dot.textContent = String(idx+1);
+        debugOverlay.appendChild(dot);
+      }
+
+      // начальный кадр — сразу на anchor, без прыжка
+      cube.style.transform = 'translate3d(0,0,0) rotate('+baseRotation.toFixed(1)+'deg) scale('+scale.toFixed(2)+')';
+    });
+
+    return card;
+  }
+
+  // =======================================================================
+  // ORBIT ICE — отдельная сцена: одна креманка + 6 льдинок, вращающихся
+  // вокруг неё по скроллу. Расширяет тот же physics engine (allCards/allCubes),
+  // ничего не дублирует и не ломает существующую механику мыши.
+  // =======================================================================
+  // Координаты — точные измерения по макету «блок х.png» (% от контейнера).
+  // Карусель: движение льдинок ТОЛЬКО по оси X (Y всегда как в макете, не меняется).
+  // "Глубина" (перед/за креманкой) имитируется через scale/opacity/z-index на основе
+  // угла на общей орбите — как в 3D-каруселях (сплюснутая по Y эллиптическая орбита).
+  // front:true — льдинка в макете крупнее (ближе к зрителю, перед креманкой),
+  // front:false — мельче (дальше, будет уходить за креманку при вращении).
+  var ORBIT_SCENE = {
+    image: 'assets/img/mar.png',
+    orbitCenter: { x: 53.7, y: 24.9 },
+    orbitRadiusX: 46,         // % от ширины контейнера
+    scrollSensitivity: 0.05,  // deg на px прокрутки — "тяжёлое", неторопливое вращение
+    smoothing: 0.10,          // сглаживание currentRotation -> targetRotation
+    depthScaleRange: [0.55, 1.08],   // множитель scale: [дальше всего, ближе всего] — усиленный контраст
+    depthOpacityRange: [0.32, 1.0],  // множитель opacity: [дальше всего, ближе всего] — усиленный контраст
+    minAngleGapDeg: 24, // минимальный угловой зазор между льдинками, чтобы не "слипались"
+    extraCubeCount: 7, // добавочные льдинки поверх исходных 6 из макета — для более насыщенной композиции
+    cubes: [
+      { x: 8.3,  y: 34.1, scale: 1.00, front: false, img: 'ice.PNG'  },
+      { x: 30.8, y: 22.7, scale: 1.02, front: true,  img: 'ice2.PNG' },
+      { x: 57.0, y: 16.1, scale: 0.98, front: false, img: 'Ice3.PNG' },
+      { x: 70.8, y: 60.4, scale: 0.89, front: false, img: 'ice4.PNG' },
+      { x: 92.1, y: 50.2, scale: 1.12, front: true,  img: 'ice5.PNG' },
+      { x: 44.6, y: 71.7, scale: 1.03, front: true,  img: 'ice6.PNG' }
+    ]
+  };
+
+  function buildOrbitCard(scene){
+    var stage = document.getElementById('orbitStage');
+    if (!stage) return;
+
+    var gelatoImg = document.createElement('img');
+    gelatoImg.className = 'orbit-gelato-img';
+    gelatoImg.src = scene.image;
+    gelatoImg.alt = 'Джелато MonBlan';
+    gelatoImg.loading = 'lazy';
+    stage.appendChild(gelatoImg); // GelatoImage — статична, никогда не вращается
+
+    var layer = document.createElement('div');
+    layer.className = 'ice-layer';
+    stage.appendChild(layer); // IceLayer — вращается
+
+    var cardState = {
+      layer: layer, media: stage,
+      pointerActive: false, pointerX: 0, pointerY: 0,
+      rectW: 1, rectH: 1,
+      interactionRadiusPct: icePhysicsConfig.interactionRadiusPct,
+      orbit: true,
+      orbitCenterXPct: scene.orbitCenter.x,
+      orbitCenterYPct: scene.orbitCenter.y,
+      targetRotationDeg: 0,
+      currentRotationDeg: 0,
+      scrollSensitivity: scene.scrollSensitivity,
+      smoothing: scene.smoothing,
+      lastScrollDirection: '—'
+    };
+    allCards.push(cardState);
+
+    // Эта сцена реагирует ТОЛЬКО на скролл — без mouse-repulsion физики.
+    // pointerActive остаётся всегда false, поэтому в общем physics loop
+    // ветка отталкивания от курсора для этой карточки просто не сработает.
+    // rectW/rectH обновляем сразу и далее держим свежими через общий resize-listener.
+    var initRect = layer.getBoundingClientRect();
+    cardState.rectW = initRect.width || 1;
+    cardState.rectH = initRect.height || 1;
+
+    var cfg = icePhysicsConfig;
+    var rng = mulberry32(9090);
+
+    var debugOverlay = null;
+    if (DEBUG_ICE){
+      debugOverlay = document.createElement('div');
+      debugOverlay.className = 'ice-debug';
+      // orbit center marker
+      var centerDot = document.createElement('div');
+      centerDot.className = 'a-dot';
+      centerDot.style.left = scene.orbitCenter.x + '%';
+      centerDot.style.top = scene.orbitCenter.y + '%';
+      centerDot.textContent = 'C';
+      debugOverlay.appendChild(centerDot);
+      stage.appendChild(debugOverlay);
+
+      var readout = document.createElement('div');
+      readout.className = 'orbit-debug-readout';
+      stage.appendChild(readout);
+      cardState.debugReadout = readout;
+    }
+
+    // ---- угловой зазор: не даём льдинкам оказываться слишком близко друг к другу ----
+    var minGap = scene.minAngleGapDeg || 0;
+    function angleDiffDeg(a, b){
+      var d = Math.abs(a - b) % 360;
+      return d > 180 ? 360 - d : d;
+    }
+    function tooClose(angleDeg, existing){
+      for (var k = 0; k < existing.length; k++){
+        if (angleDiffDeg(angleDeg, existing[k]) < minGap) return true;
+      }
+      return false;
+    }
+
+    // номинальные углы исходных 6 льдинок (по базовому radiusX, без учёта их
+    // индивидуального radiusMul-джиттера) — используются только для проверки зазора
+    var placedAngles = scene.cubes.map(function(a){
+      var cv = Math.max(-1, Math.min(1, (a.x - scene.orbitCenter.x) / scene.orbitRadiusX));
+      return Math.acos(cv) * (a.front ? 1 : -1) * 180/Math.PI;
+    });
+
+    // ---- добавочные льдинки: заполняем промежутки по окружности вокруг исходных 6 ----
+    var allOrbitCubes = scene.cubes.slice();
+    var extraCount = scene.extraCubeCount || 0;
+    for (var e = 0; e < extraCount; e++){
+      var angleDeg, tries = 0;
+      do {
+        angleDeg = (360 / extraCount) * e + 22 + (rng()-0.5)*26; // с джиттером, чтобы не выглядело сеткой
+        tries++;
+      } while (tooClose(angleDeg, placedAngles) && tries < 12);
+      placedAngles.push(angleDeg);
+
+      var angleRad = angleDeg * Math.PI/180;
+      var extraX = scene.orbitCenter.x + Math.cos(angleRad) * scene.orbitRadiusX;
+      var extraY = 20 + rng()*50; // в пределах вертикальной полосы исходной композиции
+      allOrbitCubes.push({
+        x: extraX, y: extraY,
+        scale: 0.78 + rng()*0.3,
+        front: Math.sin(angleRad) >= 0,
+        img: ICE_IMAGES[Math.floor(rng()*ICE_IMAGES.length)]
+      });
+    }
+
+    allOrbitCubes.forEach(function(anchor, idx){
+      var cube = document.createElement('div');
+      cube.className = 'ice-cube';
+      cube.style.left = anchor.x + '%';
+      cube.style.top = anchor.y + '%';
+
+      var cubeImg = document.createElement('img');
+      cubeImg.src = ICE_BASE + anchor.img;
+      cubeImg.alt = '';
+      cubeImg.setAttribute('aria-hidden', 'true');
+      cube.appendChild(cubeImg);
+      layer.appendChild(cube);
+
+      var baseRotation = (rng()*2-1) * 14;
+      var baseOpacity = 0.75 + rng()*0.18;
+
+      // 18. лёгкая рассинхронизация — каждая льдинка крутится чуть по-своему,
+      // а не одним жёстким диском (визуально более живое, "непричёсанное" движение)
+      var orbitSpeedMul = 0.82 + rng()*0.4;    // 0.82–1.22
+      var orbitRadiusMul = 0.88 + rng()*0.24;  // 0.88–1.12
+
+      // ---- угол на орбите: подобран так, чтобы cos(angle)*effectiveRadius точно
+      // давал X-позицию из макета (даже с учётом индивидуального orbitRadiusMul),
+      // а знак (перед/за) брался из anchor.front ----
+      var effectiveRadius = scene.orbitRadiusX * orbitRadiusMul;
+      var cosVal = Math.max(-1, Math.min(1, (anchor.x - scene.orbitCenter.x) / effectiveRadius));
+      var baseAngle = Math.acos(cosVal) * (anchor.front ? 1 : -1); // radians
+
+      var state = {
+        el: cube, card: cardState, cfg: cfg,
+        anchorXPct: anchor.x, anchorYPct: anchor.y,
+        orbit: true, baseAngle: baseAngle, orbitRadiusXPct: scene.orbitRadiusX,
+        orbitSpeedMul: orbitSpeedMul, orbitRadiusMul: orbitRadiusMul,
+        baseOpacity: baseOpacity,
+        depthScaleRange: scene.depthScaleRange, depthOpacityRange: scene.depthOpacityRange,
+        dx: 0, dy: 0, vx: 0, vy: 0,
+        angle: 0, angularVelocity: 0,
+        baseRotation: baseRotation, scale: anchor.scale || 1,
+        mass: 0.85 + rng()*0.3,
+        friction: cfg.friction + (rng()-0.5)*0.03,
+        returnFriction: cfg.returnFriction + (rng()-0.5)*0.03,
+        returnStrength: cfg.returnStrength * (0.9 + rng()*0.3),
+        maxDisplacementPct: cfg.maxDisplacementPct * (0.85 + rng()*0.3)
+      };
+      allCubes.push(state);
+
+      if (DEBUG_ICE && debugOverlay){
+        var dot = document.createElement('div');
+        dot.className = 'a-dot';
+        dot.style.left = anchor.x + '%';
+        dot.style.top = anchor.y + '%';
+        dot.textContent = String(idx+1);
+        debugOverlay.appendChild(dot);
+      }
+
+      // начальное состояние глубины (до первого тика физического цикла), чтобы не мигало
+      var depth0 = Math.sin(baseAngle); // -1 (дальше всего) .. +1 (ближе всего)
+      var depthT0 = (depth0 + 1) / 2;
+      cube.style.opacity = (scene.depthOpacityRange[0] + depthT0*(scene.depthOpacityRange[1]-scene.depthOpacityRange[0])).toFixed(2);
+      cube.style.zIndex = depth0 >= 0 ? 8 : 2;
+      cube.style.transform = 'translate3d(0,0,0) rotate('+baseRotation.toFixed(1)+'deg) scale('+((anchor.scale||1)*(scene.depthScaleRange[0] + depthT0*(scene.depthScaleRange[1]-scene.depthScaleRange[0]))).toFixed(3)+')';
+    });
+
+    // ---- SCROLL DOWN = CLOCKWISE, SCROLL UP = COUNTER-CLOCKWISE ----
+    // Копим scroll delta в targetRotation; фактическое плавное вращение
+    // (smoothing) происходит внутри общего requestAnimationFrame-цикла.
+    if (!REDUCE_MOTION){
+      var lastScrollY = window.scrollY || window.pageYOffset || 0;
+      window.addEventListener('scroll', function(){
+        var y = window.scrollY || window.pageYOffset || 0;
+        var delta = y - lastScrollY;
+        lastScrollY = y;
+        if (delta !== 0){
+          cardState.lastScrollDirection = delta > 0 ? 'DOWN (↻)' : 'UP (↺)';
+        }
+        // scroll вниз (delta>0) -> по часовой стрелке -> увеличиваем rotation
+        cardState.targetRotationDeg += delta * cardState.scrollSensitivity;
+      }, { passive: true });
+    }
+  }
+
+  var gallery = document.getElementById('iceGallery');
+  if (gallery){
+    FLAVORS.forEach(function(flavor){
+      gallery.appendChild(buildCard(flavor));
+    });
+  }
+
+  var orbitStage = document.getElementById('orbitStage');
+  if (orbitStage){
+    buildOrbitCard(ORBIT_SCENE);
+  }
+
+  if (gallery || orbitStage){
+    // плавное появление карточек при скролле (свой observer — независим от других скриптов)
+    var revealTargets = [];
+    if (gallery) revealTargets = revealTargets.concat(Array.prototype.slice.call(gallery.querySelectorAll('.reveal-scale')));
+    if (orbitStage) revealTargets.push(orbitStage);
+    if ('IntersectionObserver' in window){
+      var iceIo = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if (e.isIntersecting){ e.target.classList.add('in'); iceIo.unobserve(e.target); }
+        });
+      }, { threshold: 0.15 });
+      revealTargets.forEach(function(el){ iceIo.observe(el); });
+    } else {
+      revealTargets.forEach(function(el){ el.classList.add('in'); });
+    }
+
+    if (!REDUCE_MOTION){
+      startIcePhysicsLoop();
+    }
+
+    if (DEBUG_ICE){ console.info('[ICE_DEBUG] включён. Нажми "D" чтобы выключить.'); }
+    window.addEventListener('keydown', function(e){
+      if ((e.key === 'd' || e.key === 'D') && !e.metaKey && !e.ctrlKey && !e.altKey){
+        var url = new URL(location.href);
+        if (DEBUG_ICE){ url.searchParams.delete('ice-debug'); } else { url.searchParams.set('ice-debug','1'); }
+        location.href = url.toString();
+      }
+    });
+  }
+
+  // ---- 12/15/16/17/29. ЕДИНЫЙ PHYSICS LOOP (requestAnimationFrame) ------
+  function startIcePhysicsLoop(){
+    function frame(){
+      for (var c=0; c<allCards.length; c++){
+        var cs = allCards[c];
+
+        // ---- scroll-driven orbital rotation: плавно подводим currentRotation к targetRotation ----
+        if (cs.orbit){
+          cs.currentRotationDeg += (cs.targetRotationDeg - cs.currentRotationDeg) * cs.smoothing;
+          if (cs.debugReadout){
+            cs.debugReadout.textContent =
+              'Rotation: ' + cs.currentRotationDeg.toFixed(1) + '°\n' +
+              'Target: ' + cs.targetRotationDeg.toFixed(1) + '°\n' +
+              'Scroll: ' + (cs.lastScrollDirection || '—');
+          }
+        }
+
+        if (DEBUG_ICE && cs.debugRadiusEl){
+          if (cs.pointerActive){
+            var radiusPx = cs.rectW * cs.interactionRadiusPct / 100;
+            var rPctX = radiusPx / cs.rectW * 100;
+            var rPctY = radiusPx / cs.rectH * 100;
+            var pxPct = cs.pointerX / cs.rectW * 100;
+            var pyPct = cs.pointerY / cs.rectH * 100;
+            cs.debugRadiusEl.style.display = 'block';
+            cs.debugRadiusEl.style.left = (pxPct - rPctX) + '%';
+            cs.debugRadiusEl.style.top = (pyPct - rPctY) + '%';
+            cs.debugRadiusEl.style.width = (rPctX*2) + '%';
+            cs.debugRadiusEl.style.height = (rPctY*2) + '%';
+            cs.debugPointerEl.style.display = 'block';
+            cs.debugPointerEl.style.left = pxPct + '%';
+            cs.debugPointerEl.style.top = pyPct + '%';
+          } else if (cs.debugRadiusEl.style.display !== 'none'){
+            cs.debugRadiusEl.style.display = 'none';
+            cs.debugPointerEl.style.display = 'none';
+          }
+        }
+      }
+
+      for (var i=0; i<allCubes.length; i++){
+        var s = allCubes[i];
+        var cs2 = s.card;
+
+        // статическая (CSS left/top) позиция кубика — точка отсчёта для translate3d
+        var staticAbsX = s.anchorXPct/100 * cs2.rectW;
+        var staticAbsY = s.anchorYPct/100 * cs2.rectH;
+
+        // ---- карусель: вращение СТРОГО по оси X вокруг центра креманки ----
+        // Y кубика никогда не меняется (как в макете). "Глубина" (перед/за
+        // креманкой) имитируется через scale/opacity/z-index от sin(angle).
+        var anchorAbsX = staticAbsX, anchorAbsY = staticAbsY;
+        var orbitDeltaX = 0, orbitDeltaY = 0;
+        var orbitDepth = 0; // -1..+1, используется ниже для scale/opacity/z-index
+        if (s.orbit){
+          var theta = cs2.currentRotationDeg * Math.PI/180 * s.orbitSpeedMul;
+          var curAngle = s.baseAngle + theta;
+          var centerAbsX = cs2.orbitCenterXPct/100 * cs2.rectW;
+          var radiusXpx = (s.orbitRadiusXPct * s.orbitRadiusMul) / 100 * cs2.rectW;
+          anchorAbsX = centerAbsX + Math.cos(curAngle) * radiusXpx;
+          orbitDeltaX = anchorAbsX - staticAbsX;
+          orbitDepth = Math.sin(curAngle);
+        }
+        var cubeAbsX = anchorAbsX + s.dx;
+        var cubeAbsY = anchorAbsY + s.dy;
+
+        // 15. отталкивание от курсора (только если курсор реально над этой карточкой)
+        // радиус в % от ширины карточки — одинаково ощущается на любом экране
+        var interactionRadiusPx = cs2.rectW * s.cfg.interactionRadiusPct / 100;
+        if (cs2.pointerActive){
+          var ddx = cubeAbsX - cs2.pointerX;
+          var ddy = cubeAbsY - cs2.pointerY;
+          var dist = Math.sqrt(ddx*ddx + ddy*ddy) || 0.0001;
+          if (dist < interactionRadiusPx){
+            var force = 1 - dist/interactionRadiusPx;
+            force = force*force;
+            var invMass = 1/s.mass;
+            s.vx += (ddx/dist) * force * s.cfg.interactionStrength * invMass;
+            s.vy += (ddy/dist) * force * s.cfg.interactionStrength * invMass;
+            s.angularVelocity += (ddx/dist) * force * s.cfg.rotationStrength;
+          }
+        }
+
+        // 17. пружина возврата к anchor point
+        s.vx += -s.dx * s.returnStrength;
+        s.vy += -s.dy * s.returnStrength;
+
+        // 16. инерция + трение
+        // пока курсор рядом — мягкое инерционное трение (живой, тягучий толчок);
+        // как только курсор ушёл — усиленное трение на возврате, чтобы льдинка
+        // плавно доходила до anchor без пружинного перелёта/раскачивания
+        var frictionNow = cs2.pointerActive ? s.friction : s.returnFriction;
+        s.dx += s.vx;
+        s.dy += s.vy;
+        s.vx *= frictionNow;
+        s.vy *= frictionNow;
+
+        // 21. ограничение максимального смещения от anchor (% от ширины карточки)
+        var maxDisplacementPx = cs2.rectW * s.maxDisplacementPct / 100;
+        var dispDist = Math.sqrt(s.dx*s.dx + s.dy*s.dy);
+        if (dispDist > maxDisplacementPx){
+          var k = maxDisplacementPx/dispDist;
+          s.dx *= k; s.dy *= k;
+          s.vx *= 0.55; s.vy *= 0.55;
+        }
+
+        // 34. микровращение + возврат вращения к базовому
+        s.angularVelocity += -s.angle * s.returnStrength * 1.6;
+        s.angle += s.angularVelocity;
+        s.angularVelocity *= frictionNow;
+
+        // 34б. лёгкое вращение самого кубика вокруг своей оси, синхронно с орбитой
+        var selfSpin = s.orbit ? cs2.currentRotationDeg * 0.22 : 0;
+        var totalX = orbitDeltaX + s.dx;
+        var totalY = orbitDeltaY + s.dy;
+
+        // карусельная "глубина": льдинка ближе (перед креманкой) — крупнее,
+        // непрозрачнее и выше по z-index; дальше (за креманкой) — наоборот
+        var scaleMul = 1;
+        if (s.orbit){
+          var depthT = (orbitDepth + 1) / 2; // 0..1
+          scaleMul = s.depthScaleRange[0] + depthT*(s.depthScaleRange[1]-s.depthScaleRange[0]);
+          s.el.style.opacity = (s.depthOpacityRange[0] + depthT*(s.depthOpacityRange[1]-s.depthOpacityRange[0])).toFixed(2);
+          s.el.style.zIndex = orbitDepth >= 0 ? (8 + Math.round(depthT*4)) : (1 + Math.round(depthT*2));
+        }
+
+        s.el.style.transform =
+          'translate3d('+totalX.toFixed(2)+'px,'+totalY.toFixed(2)+'px,0) ' +
+          'rotate('+(s.baseRotation+s.angle+selfSpin).toFixed(2)+'deg) ' +
+          'scale('+(s.scale*scaleMul).toFixed(3)+')';
+      }
+
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // держим rectW/rectH актуальными при ресайзе, даже если курсор не двигался
+  window.addEventListener('resize', function(){
+    allCards.forEach(function(cs){
+      var rect = cs.layer.getBoundingClientRect();
+      cs.rectW = rect.width || 1;
+      cs.rectH = rect.height || 1;
+    });
+  });
+})();
+</script>
+</body>
+</html>

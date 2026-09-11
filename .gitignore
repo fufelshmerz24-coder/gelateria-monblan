@@ -1,0 +1,23 @@
+# Исходники и черновики — не нужны для работы сайта, слишком большие для репозитория
+/видео/
+/макет/
+/фото/
+/шрифт/
+/сценарий/
+/icon/
+/maket gelato.fig
+/assets.rar
+/описание вкусов.docx
+
+# старые черновые версии страницы (актуальная — index.html)
+/gelateria_monblan.html
+/gelateria_monblan_2.html
+/gelateria_monblan_3.html
+/gelateria_monblan_4.html
+/gelateria_monblan_5.html
+/gelateria monblan v1 23.07.26.html
+/gelateria monblan v2 24.07.26.html
+
+# системные
+.DS_Store
+Thumbs.db
