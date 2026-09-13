@@ -604,10 +604,15 @@
   .velvet-bottom .vtext{max-width:760px;text-align:left;}
   .velvet-bottom p{color:var(--cream);opacity:.9;font-family:'Graphik',sans-serif;font-style:normal;font-size:var(--text-size);line-height:1.6;margin:0;text-transform:uppercase;}
 
-  /* --- мобильные и планшеты: текст на всю ширину контентной колонки --- */
+  /* --- мобильные и планшеты: текст на всю ширину контентной колонки,
+     кегль как в блоке «Место встречи» (--tag-size); .velvet больше не
+     держит фиксированную высоту (aspect-ratio/min-height) — иначе при таком
+     узком блоке текст не помещался и обрезался через overflow:hidden --- */
   @media (max-width:1100px){
+    .velvet{aspect-ratio:auto;min-height:0;}
     .velvet-bottom .wrap{display:block;}
     .velvet-bottom .vtext{max-width:none;text-align:left;}
+    .velvet-bottom p{font-size:var(--tag-size);line-height:1.6;}
   }
 
   /* ===== TECHNOLOGY ===== */
