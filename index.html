@@ -557,6 +557,12 @@
   .scoop:hover .more svg{transform:translateX(3px);}
   .scoop:hover .more{opacity:1;text-decoration:underline;}
 
+  /* мобильные и планшеты: слово «подробнее» было слишком громоздким */
+  @media(max-width:1100px){
+    .scoop .more{font-size:11px;}
+    .scoop .more svg{width:14px;height:10px;}
+  }
+
   .scoop-grid{
     display:grid;grid-template-columns:repeat(4,1fr);
     gap:clamp(14px,1.7vw,40px);   /* равномерная сетка карточек, ~25px как в макете */
@@ -778,9 +784,23 @@
   }
   .fm-nav button svg{width:28px;height:15px;display:block;flex:0 0 auto;}
   .fm-nav button:hover{opacity:.65;}
+  /* мобильные и планшеты: карточка вкуса ограничена ~70% высоты экрана,
+     внутри — скролл на случай, если контент всё же не влезает */
+  @media(max-width:1100px){
+    .modal{max-height:70svh;overflow-y:auto;padding:48px 32px 32px;}
+  }
   @media(max-width:760px){
-    .modal{padding:70px 24px 32px;}
-    .fm-grid{grid-template-columns:1fr;gap:28px;}
+    .modal{padding:56px 20px 24px;}
+    .fm-grid{grid-template-columns:1fr;gap:18px;}
+    /* компактнее фото и типографика — чтобы всё содержимое помещалось на карточке */
+    .fm-photo{aspect-ratio:16/9;}
+    .fm-brand{font-size:26px;margin-bottom:12px;}
+    .fm-info h3{font-size:16px;margin:0 0 8px;}
+    .fm-info p{font-size:14px;line-height:1.5;margin:0 0 14px;}
+    .fm-kbju-label{font-size:13px;margin-bottom:4px;}
+    .fm-kbju-lines{font-size:13px;line-height:1.4;}
+    .fm-nav{margin-top:18px;}
+    .fm-nav button{font-size:13px;}
   }
 
 
