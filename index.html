@@ -610,9 +610,16 @@
      узком блоке текст не помещался и обрезался через overflow:hidden --- */
   @media (max-width:1100px){
     .velvet{aspect-ratio:auto;min-height:0;}
+    /* компактнее поля сверху/снизу — блок (и фоновая картинка под ним,
+       она растягивается на всю высоту .velvet) становится ниже, но
+       остаётся на всю ширину экрана */
+    .velvet-top, .velvet-bottom{padding:32px 0;}
     .velvet-bottom .wrap{display:block;}
     .velvet-bottom .vtext{max-width:none;text-align:left;}
-    .velvet-bottom p{font-size:var(--tag-size);line-height:1.6;}
+    .velvet-bottom p{font-size:var(--tag-size);line-height:1.5;}
+    /* убираем принудительный перенос строки — на всю ширину колонки текст
+       сам разбивается на 2-3 строки вместо 4 */
+    .velvet-bottom p br{display:none;}
   }
 
   /* ===== TECHNOLOGY ===== */
@@ -1127,7 +1134,7 @@
   <div class="velvet-bottom">
     <div class="wrap">
       <div class="vtext reveal">
-        <p>Выбирайте по&nbsp;настроению, возвращайтесь за&nbsp;любимым вкусом.<br>У&nbsp;нас всегда найдётся джелато, к&nbsp;которому захочется вернуться.</p>
+        <p>Выбирайте по&nbsp;настроению, возвращайтесь за&nbsp;любимым вкусом. <br>У&nbsp;нас всегда найдётся джелато, к&nbsp;которому захочется вернуться.</p>
       </div>
     </div>
   </div>
