@@ -380,6 +380,12 @@
     .ice-gallery .ice-card:nth-child(2),
     .ice-gallery .ice-card:nth-child(5){margin-top:0;}
   }
+  /* мобильные и планшеты: без описания вкуса — только креманка и название;
+     сама креманка крупнее, чем на десктопе (там смотрелась мелко) */
+  @media(max-width:1100px){
+    .ice-card-desc{display:none;}
+    .ice-card-media{width:92%;}
+  }
 
   /* ---- orbit ice (scroll-driven rotating ice around a single cup) ---- */
   .orbit-section{padding:60px 0;}
